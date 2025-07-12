@@ -1,0 +1,13 @@
+{
+  "events": [
+    {
+      "name": "Missile Strike",
+      "art": "screeching_missile.jpg",
+      "sound": "screeching_missile.mp3",
+      "soundDelay": 0.0,
+      "remoteSound": "heavy_explosion.mp3",
+      "remoteSoundDelay": 7.4,
+      "vibration": "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 100 100 100 100 100 100 100 100 100 100 100 100 100 0"
+    }
+  ]
+}
