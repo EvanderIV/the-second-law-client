@@ -6,8 +6,69 @@
       "sound": "screeching_missile.mp3",
       "soundDelay": 0.0,
       "remoteSound": "heavy_explosion.mp3",
-      "remoteSoundDelay": 7.4,
-      "vibration": "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 100 100 100 100 100 100 100 100 100 100 100 100 100 0"
+      "remoteSoundDelay": 7.0,
+      "vibrationPattern": [
+        800, 30, 500, 100, 300, 200, 100, 30, 80, 50, 30, 10, 40, 10, 30, 10,
+        20, 10
+      ],
+      "vibrationDelay": 7.3
+    },
+    {
+      "name": "Gunfire",
+      "art": "gunfire.jpg",
+      "sound": "gunfire.mp3",
+      "soundDelay": 0.0,
+      "remoteSound": "gunfire.mp3",
+      "remoteSoundDelay": 0.0,
+      "vibrationPattern": {
+        "type": "random",
+        "length": 100,
+        "totalDuration": 5.0,
+        "interavalMin": 0.25,
+        "interavalMax": 2.0
+      },
+      "vibrationDelay": 0.0
+    },
+    {
+      "name": "Light Explosion",
+      "art": "light_explosion.jpg",
+      "sound": "light_explosion.mp3",
+      "soundDelay": 0.0,
+      "vibrationPattern": [200, 50, 100, 50, 70, 50, 60, 30, 10, 20, 5],
+      "vibrationDelay": 0.0
+    },
+    {
+      "name": "Medium Explosion",
+      "art": "medium_explosion.jpg",
+      "sound": "medium_explosion.mp3",
+      "soundDelay": 0.0,
+      "remoteSound": "rubble_trickling.mp3",
+      "remoteSoundDelay": 2.0,
+      "vibrationPattern": [
+        600, 30, 300, 80, 200, 100, 150, 30, 70, 30, 10, 5, 30, 5, 20, 5, 10, 5
+      ],
+      "vibrationDelay": 0.0
+    },
+    {
+      "name": "Heavy Explosion",
+      "art": "heavy_explosion.jpg",
+      "sound": "heavy_explosion.mp3",
+      "soundDelay": 0.0,
+      "remoteSound": "rubble_trickling.mp3",
+      "remoteSoundDelay": 2.0,
+      "vibrationPattern": [
+        800, 30, 500, 100, 300, 200, 100, 30, 80, 50, 30, 10, 40, 10, 30, 10,
+        20, 10
+      ],
+      "vibrationDelay": 0.0
+    },
+    {
+      "name": "Falling Metal Pipe",
+      "art": "falling_metal_pipe.jpg",
+      "sound": "falling_metal_pipe.mp3",
+      "soundDelay": 0.0,
+      "vibrationPattern": 200,
+      "vibrationDelay": 0.0
     }
   ]
 }

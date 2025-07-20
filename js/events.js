@@ -16,8 +16,160 @@ window.mobileAndTabletCheck = function () {
 
 let isMobileUser = window.mobileAndTabletCheck();
 
+// Menu music system
+let menuMusicData = null;
+let currentMenuMusic = null;
+let recentlyPlayedMenuMusic = [];
+const MAX_RECENT_TRACKS = 3;
+const ENABLE_MUSIC_FADING = false; // Set to false to disable fading
+const FADE_DURATION = 2000; // Fade duration in milliseconds
+
+// Load menu music data
+async function loadMenuMusic() {
+  try {
+    const response = await fetch("js/menu_music.json");
+    menuMusicData = await response.json();
+  } catch (error) {
+    console.error("Error loading menu music:", error);
+  }
+}
+
+function getRandomMenuTrack() {
+  if (
+    !menuMusicData ||
+    !menuMusicData.music ||
+    menuMusicData.music.length === 0
+  ) {
+    return null;
+  }
+
+  // Filter out recently played tracks
+  const availableTracks = menuMusicData.music.filter(
+    (track) => !recentlyPlayedMenuMusic.includes(track.source)
+  );
+
+  // If all tracks have been recently played, reset the history
+  if (availableTracks.length === 0) {
+    recentlyPlayedMenuMusic = [];
+    return getRandomMenuTrack();
+  }
+
+  // Use cryptographic random to select a track
+  const trackIndex = getSecureRandom(0, availableTracks.length - 1);
+  const selectedTrack = availableTracks[trackIndex];
+
+  // Add to recently played and maintain history length
+  recentlyPlayedMenuMusic.push(selectedTrack.source);
+  if (recentlyPlayedMenuMusic.length > MAX_RECENT_TRACKS) {
+    recentlyPlayedMenuMusic.shift();
+  }
+
+  return selectedTrack;
+}
+
+export function startMenuMusic() {
+  if (isMobileUser || !menuMusicData) return;
+
+  const track = getRandomMenuTrack();
+  if (!track) return;
+
+  const newTrack = new Audio(track.source);
+  const targetVolume = track.volume || 0.5;
+
+  if (ENABLE_MUSIC_FADING) {
+    // Start with zero volume for smooth fade in
+    newTrack.volume = 0;
+
+    // If there's a current track, fade it out but don't stop it
+    if (currentMenuMusic) {
+      const oldTrack = currentMenuMusic;
+      const startTime = Date.now();
+
+      const fadeOut = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = elapsed / FADE_DURATION;
+
+        if (progress >= 1) {
+          clearInterval(fadeOut);
+          // Don't pause the old track, let it play until it ends naturally
+          if (ENABLE_MUSIC_FADING) {
+            oldTrack.volume = 0;
+          }
+        } else {
+          oldTrack.volume = Math.max(0, oldTrack.volume - 0.02);
+        }
+      }, 50);
+
+      // Set up ended event handler for the old track
+      oldTrack.addEventListener("ended", () => {
+        oldTrack.remove(); // Clean up the audio element when it's done
+      });
+    }
+
+    // Play new track and fade it in
+    newTrack
+      .play()
+      .then(() => {
+        const startTime = Date.now();
+
+        const fadeIn = setInterval(() => {
+          const elapsed = Date.now() - startTime;
+          const progress = elapsed / FADE_DURATION;
+
+          if (progress >= 1) {
+            clearInterval(fadeIn);
+            newTrack.volume = targetVolume;
+          } else {
+            newTrack.volume = progress * targetVolume;
+          }
+        }, 50);
+      })
+      .catch((error) => console.error("Error playing menu music:", error));
+  } else {
+    // No fading - play new track at full volume without stopping the current one
+    newTrack.volume = targetVolume;
+    newTrack
+      .play()
+      .catch((error) => console.error("Error playing menu music:", error));
+  }
+
+  currentMenuMusic = newTrack;
+
+  // Set up ended event handler for the new track
+  newTrack.addEventListener("ended", () => {
+    newTrack.remove(); // Clean up the audio element when it's done
+  });
+
+  // Schedule next track
+  setTimeout(() => {
+    startMenuMusic();
+  }, track.length - (ENABLE_MUSIC_FADING ? FADE_DURATION : 0)); // Start transition early only if fading is enabled
+}
+
+export function stopMenuMusic() {
+  if (currentMenuMusic) {
+    currentMenuMusic.pause();
+    currentMenuMusic = null;
+  }
+}
+
 // Event handling system
 let eventsData = null;
+
+// Cryptographically secure random number generator function
+function getSecureRandom(min, max) {
+  // Create a new array with a single 32-bit unsigned integer
+  const randomBuffer = new Uint32Array(1);
+
+  // Fill it with cryptographically secure random values
+  window.crypto.getRandomValues(randomBuffer);
+
+  // Convert to a number between 0 and 1
+  const randomNumber = randomBuffer[0] / (0xffffffff + 1);
+
+  // Scale to our desired range
+  return Math.floor(randomNumber * (max - min + 1)) + min;
+}
 
 // Load events data
 async function loadEvents() {
@@ -31,7 +183,15 @@ async function loadEvents() {
 
 // Initialize events system
 async function initEvents() {
-  await loadEvents();
+  await Promise.all([loadEvents(), loadMenuMusic()]);
+}
+
+let canVibrate;
+let useVibration = localStorage.getItem("useVibration") !== "false";
+try {
+  canVibrate = window.navigator.vibrate;
+} catch (error) {
+  canVibrate = false;
 }
 
 // Play an event by name
@@ -80,12 +240,70 @@ export function playEvent(eventName) {
     }
   }
 
-  if (event.vibration) {
-    // Vibrate if specified
-    if (navigator.vibrate) {
-      navigator.vibrate(event.vibration);
+  if (event.vibrationPattern && canVibrate && useVibration) {
+    let delay =
+      event.vibrationDelay && event.vibrationDelay > 0
+        ? event.vibrationDelay * 1000
+        : 0;
+
+    if (Array.isArray(event.vibrationPattern)) {
+      setTimeout(() => {
+        window.navigator.vibrate(event.vibrationPattern);
+      }, delay);
+    } else if (typeof event.vibrationPattern === "number") {
+      setTimeout(() => {
+        window.navigator.vibrate(event.vibrationPattern);
+      }, delay);
+    } else if (typeof event.vibrationPattern === "object") {
+      // Handle special pattern types
+      const pattern = event.vibrationPattern;
+
+      if (pattern.type === "random") {
+        setTimeout(() => {
+          const vibrationPattern = [];
+          let currentTime = 0;
+
+          while (currentTime < pattern.totalDuration) {
+            // Add vibration
+            vibrationPattern.push(pattern.length);
+            currentTime += pattern.length / 1000;
+
+            if (currentTime < pattern.totalDuration) {
+              // Add random pause using cryptographically secure random numbers
+              const minMs = pattern.interavalMin * 1000;
+              const maxMs = pattern.interavalMax * 1000;
+              const pauseTime = getSecureRandom(minMs, maxMs);
+              vibrationPattern.push(pauseTime);
+              currentTime += pauseTime / 1000;
+            }
+          }
+
+          window.navigator.vibrate(vibrationPattern);
+        }, delay);
+      } else if (pattern.type === "regular") {
+        setTimeout(() => {
+          const vibrationPattern = [];
+          let currentTime = 0;
+
+          while (currentTime < pattern.totalDuration) {
+            // Add vibration
+            vibrationPattern.push(pattern.length);
+            currentTime += pattern.length / 1000;
+
+            if (currentTime < pattern.totalDuration) {
+              // Add fixed interval pause
+              vibrationPattern.push(pattern.interval);
+              currentTime += pattern.interval / 1000;
+            }
+          }
+
+          window.navigator.vibrate(vibrationPattern);
+        }, delay);
+      } else {
+        console.warn("Unknown vibration pattern type:", pattern.type);
+      }
     } else {
-      console.warn("Vibration API not supported");
+      console.warn("Invalid vibration pattern format:", event.vibrationPattern);
     }
   }
 

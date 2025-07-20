@@ -2,8 +2,8 @@
 
 <html lang="en">
 <head>
-	<title>BoatGame.exe</title>
-	<link rel="icon" href="/games/img/boatgame_icon.png">
+	<title>T2L Client</title>
+	<link rel="icon" href="/games/img/the_second_law_icon.png">
 	<meta name="darkreader-lock">
 	<link rel="stylesheet" type="text/css" href="./css/index.css">
 	<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
@@ -11,15 +11,12 @@
 <body class="darkable">
 	<div id="room-code" class="desktop-only darkable themeable"></div>
 	<div class="game-container">
-		<div id="player-list" class="desktop-only darkable themeable">
-			<div id="players-container"></div>
-		</div>
 		<div id="root" class="root flex column">
-			<input id="nickname" class="single-line-textarea darkable themeable" style="margin-top: 16cqw; height: 12cqw; width: 60%;" type="text" name="nickname-input" placeholder="Nickname" maxlength="20"></input>
+			<input id="nickname" class="single-line-textarea darkable themeable mobile-only" style="margin-top: 16cqw; height: 12cqw; width: 60%;" type="text" name="nickname-input" placeholder="Nickname" maxlength="20"></input>
 			<input id="game-code" class="input-uppercase single-line-textarea darkable themeable" style="margin-top: 2cqw; height: 8cqw;" type="search" name="game-code-input" placeholder="Room Code" maxlength="4"></input>
 			<button id="join-button" class="darkable themeable" disabled style="margin-top: 1cqw; height: 6cqw;">JOIN</button>
 			<div id="error-message"></div>
-			<div id="ready-wrapper" class="ready-wrapper">
+			<div id="ready-wrapper" class="ready-wrapper mobile-only">
 				<div id="ready-button" class="darkable themeable" role="button" tabindex="0" aria-disabled="true" style="display: none;"></div>
 				<p id="ready-text" class="ready-text darkable themeable" style="z-index: 2000; display: none;">Ready</p>
 			</div>
@@ -27,8 +24,8 @@
 			<div id="settings-div" class="mobile-only darkable themeable">
 				<audio id="settings-open-sfx" src="./audio/paper_slide_in.mp3"></audio>
 				<audio id="settings-close-sfx" src="./audio/paper_slide_out.mp3"></audio>
-				<img src="./img/arrow_retro.png" id="skin-back" class="darkable themeable">
-				<img src="./img/arrow_retro.png" id="skin-next" class="darkable themeable">
+				<img src="./img/arrow.png" id="skin-back" class="darkable themeable">
+				<img src="./img/arrow.png" id="skin-next" class="darkable themeable">
 				<p class="darkable" style="position: fixed; margin-top: 12%; left: 30%;">Dark Mode</p>
 				<label class="toggle" style="position: fixed; margin-top: 12%; left: 59%;">
 					<input type="checkbox" id="dark-mode-toggle" name="btnToggle" />

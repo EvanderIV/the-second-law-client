@@ -1,0 +1,46 @@
+{
+  "sectors": {
+    "Inner City": {
+      "default": {
+        "source": "./assets/audio/background_music.mp3",
+        "volume": 0.4,
+        "loopPoint": 104
+      }
+    },
+    "Outskirts": {
+      "default": {
+        "source": "./assets/audio/background_music.mp3",
+        "volume": 0.3,
+        "loopPoint": 104
+      }
+    },
+    "default": {
+      "default": {
+        "source": "./assets/audio/background_music.mp3",
+        "volume": 0.4,
+        "loopPoint": 104
+      }
+    }
+  },
+  "locations": {
+    "default": {
+      "source": null,
+      "volume": 1.0,
+      "loopPoint": null
+    }
+  },
+  "weather": {
+    "default": {
+      "source": null,
+      "volume": 1.0,
+      "loopPoint": null
+    }
+  },
+  "timeOfDay": {
+    "default": {
+      "source": null,
+      "volume": 1.0,
+      "loopPoint": null
+    }
+  }
+}

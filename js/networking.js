@@ -1,4 +1,5 @@
 import { playEvent } from "./events.js";
+import { startMenuMusic } from "./events.js";
 
 // WebSocket connection handling
 let socket;
@@ -101,6 +102,70 @@ function setupSocketEventHandlers() {
       onGameStarting();
     }
   });
+
+  // Handle gameState updates
+  socket.on("gameState", async (data) => {
+    console.log("Received gameState:", data);
+    try {
+      const response = await fetch("./js/sector_music.json");
+      const musicConfig = await response.json();
+
+      const state = data.state;
+      const sector = state.sector || "default";
+      const location = state.location || "default";
+      const weather = state.weather || "default";
+      const timeOfDay = state.timeOfDay || "default";
+
+      // Get sector configuration
+      const sectorConfig =
+        musicConfig.sectors[sector] || musicConfig.sectors.default;
+      const locationConfig =
+        musicConfig.locations[location] || musicConfig.locations.default;
+      const weatherConfig =
+        musicConfig.weather[weather] || musicConfig.weather.default;
+      const timeConfig =
+        musicConfig.timeOfDay[timeOfDay] || musicConfig.timeOfDay.default;
+
+      // Find first non-null source configuration, prioritizing more specific settings
+      const musicSource =
+        locationConfig.source ||
+        weatherConfig.source ||
+        timeConfig.source ||
+        sectorConfig.default.source;
+      if (!musicSource) {
+        console.warn("No music source found for current game state");
+        return;
+      }
+
+      // Calculate combined volume (multiply modifiers together)
+      const baseVolume = sectorConfig.default.volume;
+      const volumeModifier =
+        (locationConfig.volume || 1.0) *
+        (weatherConfig.volume || 1.0) *
+        (timeConfig.volume || 1.0);
+
+      // Get loop point, prioritizing more specific settings
+      const loopPoint =
+        locationConfig.loopPoint ||
+        weatherConfig.loopPoint ||
+        timeConfig.loopPoint ||
+        sectorConfig.default.loopPoint;
+
+      // Use the playBackgroundMusic function from index.js
+      if (typeof window.playBackgroundMusic === "function") {
+        window.playBackgroundMusic(
+          musicSource,
+          volumeModifier,
+          baseVolume,
+          loopPoint
+        );
+      } else {
+        console.error("playBackgroundMusic function not available");
+      }
+    } catch (error) {
+      console.error("Error handling gameState music:", error);
+    }
+  });
 }
 
 function connectToServer() {
@@ -147,45 +212,6 @@ function connectToServer() {
   });
 }
 
-function createRoom(roomCode) {
-  if (!socket || !socket.connected) {
-    connectToServer();
-    socket.once("connect", () => {
-      performCreateRoom(roomCode);
-    });
-  } else {
-    performCreateRoom(roomCode);
-  }
-}
-
-function performCreateRoom(roomCode, hostSkin) {
-  console.log("Creating room with code:", roomCode);
-
-  // Remove any existing listeners first
-  socket.off("playerJoined");
-  socket.off("playerLeft");
-
-  socket.emit("create-room", {
-    roomCode: roomCode,
-    hostId: socket.id,
-    hostSkin: hostSkin,
-  });
-
-  socket.on("playerJoined", ({ name, skinId, ready }) => {
-    console.log("Player joined:", name);
-    if (onPlayerJoined) {
-      onPlayerJoined(name, skinId, ready);
-    }
-  });
-
-  socket.on("playerLeft", ({ name }) => {
-    console.log("Player left:", name);
-    if (onPlayerLeft) {
-      onPlayerLeft(name);
-    }
-  });
-}
-
 function joinRoom(roomCode, playerName, skinId) {
   if (!socket || !socket.connected) {
     connectToServer();
@@ -217,6 +243,7 @@ function performJoin(roomCode, playerName, skinId) {
 
   // Set up handlers for room join process
   socket.once("joinSuccess", (data) => {
+    startMenuMusic();
     console.log("Successfully joined room:", data);
     document.getElementById("error-message").style.marginTop = "90vmin";
     document.getElementById("error-message").style.color = "#AAFFAA";
@@ -294,7 +321,6 @@ window.networkManager = {
     onRoomClosed = callback;
   },
   connectToServer,
-  createRoom,
   joinRoom,
   setReadyState,
   updatePlayerInfo: (data) => {

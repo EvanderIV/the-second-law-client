@@ -1,0 +1,29 @@
+{
+  "music": [
+    {
+      "source": "assets/audio/music/menu/spot_holes_1.mp3",
+      "length": 75500,
+      "volume": 0.4
+    },
+    {
+      "source": "assets/audio/music/menu/monocos_station.mp3",
+      "length": 54000,
+      "volume": 0.5
+    },
+    {
+      "source": "assets/audio/music/menu/sleeper_variant.mp3",
+      "length": 55000,
+      "volume": 0.5
+    },
+    {
+      "source": "assets/audio/music/menu/deep_space_pyramid.mp3",
+      "length": 68000,
+      "volume": 0.5
+    },
+    {
+      "source": "assets/audio/music/menu/ancient_magic.mp3",
+      "length": 135000,
+      "volume": 0.5
+    }
+  ]
+}

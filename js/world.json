@@ -1,0 +1,21 @@
+{
+  "sectors": [
+    {
+      "name": "Inner City",
+      "description": "The bustling heart of the city, filled with towering skyscrapers and vibrant nightlife.",
+      "art": "inner_city/inner_city.jpg",
+      "locations": [
+        {
+          "name": "Central Plaza",
+          "description": "A large open space surrounded by shops and cafes, often hosting events.",
+          "art": "inner_city/central_plaza.jpg"
+        },
+        {
+          "name": "MacDougall's",
+          "description": "The popular choice amongst locals for a quick bite, though the food is questionable.",
+          "art": "inner_city/city_hall.jpg"
+        }
+      ]
+    }
+  ]
+}

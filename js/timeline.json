@@ -1,0 +1,17 @@
+{
+  "weather": {
+    "Inner City": {
+      "0": "cloudy",
+      "10": "clear",
+      "28": "cloudy",
+      "50": "clear",
+      "95": "rainy"
+    }
+  },
+  "ambient": {
+    "Inner City": {
+      "0": "city_ambience.mp3",
+      "95": "concert_reverb.mp3"
+    }
+  }
+}
