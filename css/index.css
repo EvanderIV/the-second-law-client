@@ -1033,7 +1033,6 @@ input:disabled {
   pointer-events: none;
   opacity: 1;
   transition: opacity 1.25s ease, height 2.5s ease;
-  transition-delay: opacity 0.25s;
   mask-image: linear-gradient(to right, black, transparent);
 }
 #background-art.minimized {

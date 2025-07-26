@@ -215,8 +215,10 @@ function setupSocketEventHandlers() {
         background.classList.add("minimized");
         setTimeout(() => {
           background.src = `assets/art/game/${artSource}`;
-          background.classList.remove("minimized");
         }, 1500);
+        setTimeout(() => {
+          background.classList.remove("minimized");
+        }, 1800);
       }
 
       // --- GENERIC AUDIO HANDLER ---
