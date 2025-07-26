@@ -1,21 +1,24 @@
 {
   "music": [
     {
-      "trigger": "interact",
-      "actor": "cedricjames",
-      "source": "assets/audio/music/game/cedricjames_theme0.mp3",
-      "effects": [
+      "cedricjames": [
         {
-          "type": "reverb",
-          "strength": 0.5
-        },
-        {
-          "type": "compress",
-          "strength": 0.3
-        },
-        {
-          "type": "muffle",
-          "strength": 1.0
+          "trigger": "interact",
+          "source": "assets/audio/music/game/cedricjames_theme0.mp3",
+          "effects": [
+            {
+              "type": "reverb",
+              "strength": 0.5
+            },
+            {
+              "type": "compress",
+              "strength": 0.3
+            },
+            {
+              "type": "muffle",
+              "strength": 1.0
+            }
+          ]
         }
       ]
     }

@@ -1,5 +1,6 @@
 import { playEvent } from "./events.js";
-import { startMenuMusic } from "./events.js";
+import { startMenuMusic, stopMenuMusic } from "./events.js";
+import { musicVolume, ambienceVolume } from "./index.js";
 
 // WebSocket connection handling
 let socket;
@@ -11,6 +12,18 @@ let onReadyStateUpdate;
 let onPlayerInfoUpdate;
 let onGameStarting;
 let onRoomClosed;
+
+let gameStarted = false;
+
+// --- Audio Management ---
+// Variables to track the current audio paths to prevent re-playing the same tracks.
+let currentMusicPath = null;
+let currentAmbiencePath = null;
+// Arrays to manage all currently playing audio instances for each category.
+window.currentMusicLoopGroup = [];
+window.currentAmbienceLoopGroup = [];
+
+export { gameStarted };
 
 function setupSocketEventHandlers() {
   if (!socket) return;
@@ -103,67 +116,218 @@ function setupSocketEventHandlers() {
     }
   });
 
-  // Handle gameState updates
-  socket.on("gameState", async (data) => {
-    console.log("Received gameState:", data);
-    try {
-      const response = await fetch("./js/sector_music.json");
-      const musicConfig = await response.json();
+  // Helper function to fade out and stop an audio element.
+  function fadeOutAudio(audio) {
+    if (!audio || audio.paused) return;
 
-      const state = data.state;
-      const sector = state.sector || "default";
-      const location = state.location || "default";
-      const weather = state.weather || "default";
-      const timeOfDay = state.timeOfDay || "default";
+    const FADE_DURATION = 3000; // 3 seconds
+    const FADE_STEPS = 60;
+    const stepDuration = FADE_DURATION / FADE_STEPS;
+    const initialVolume = audio.volume;
+    // Prevent division by zero if initialVolume is 0
+    const volumeStep = initialVolume > 0 ? initialVolume / FADE_STEPS : 0;
 
-      // Get sector configuration
-      const sectorConfig =
-        musicConfig.sectors[sector] || musicConfig.sectors.default;
-      const locationConfig =
-        musicConfig.locations[location] || musicConfig.locations.default;
-      const weatherConfig =
-        musicConfig.weather[weather] || musicConfig.weather.default;
-      const timeConfig =
-        musicConfig.timeOfDay[timeOfDay] || musicConfig.timeOfDay.default;
+    if (volumeStep === 0) {
+      audio.pause();
+      return;
+    }
 
-      // Find first non-null source configuration, prioritizing more specific settings
-      const musicSource =
-        locationConfig.source ||
-        weatherConfig.source ||
-        timeConfig.source ||
-        sectorConfig.default.source;
-      if (!musicSource) {
-        console.warn("No music source found for current game state");
-        return;
-      }
-
-      // Calculate combined volume (multiply modifiers together)
-      const baseVolume = sectorConfig.default.volume;
-      const volumeModifier =
-        (locationConfig.volume || 1.0) *
-        (weatherConfig.volume || 1.0) *
-        (timeConfig.volume || 1.0);
-
-      // Get loop point, prioritizing more specific settings
-      const loopPoint =
-        locationConfig.loopPoint ||
-        weatherConfig.loopPoint ||
-        timeConfig.loopPoint ||
-        sectorConfig.default.loopPoint;
-
-      // Use the playBackgroundMusic function from index.js
-      if (typeof window.playBackgroundMusic === "function") {
-        window.playBackgroundMusic(
-          musicSource,
-          volumeModifier,
-          baseVolume,
-          loopPoint
-        );
+    let fadeInterval = setInterval(() => {
+      const newVolume = audio.volume - volumeStep;
+      if (newVolume <= 0) {
+        audio.volume = 0;
+        audio.pause();
+        // Clean up the element after it's fully faded and stopped
+        audio.src = "";
+        clearInterval(fadeInterval);
       } else {
-        console.error("playBackgroundMusic function not available");
+        audio.volume = newVolume;
       }
+    }, stepDuration);
+  }
+
+  // Helper function to fade in an audio element that is ALREADY PLAYING.
+  function fadeInAudio(audio, targetVolume, duration) {
+    if (targetVolume <= 0) return; // No need to fade if target is 0 or less.
+
+    const FADE_STEPS = 60;
+    const stepDuration = duration / FADE_STEPS;
+    const volumeStep = targetVolume / FADE_STEPS;
+
+    if (volumeStep <= 0) return;
+
+    let fadeInterval = setInterval(() => {
+      const newVolume = audio.volume + volumeStep;
+      if (newVolume >= targetVolume) {
+        audio.volume = targetVolume;
+        clearInterval(fadeInterval);
+      } else {
+        audio.volume = newVolume;
+      }
+    }, stepDuration);
+  }
+
+  // This 'gameState' handler now supports overlapping audio loops for music and ambience.
+  socket.on("gameState", async (data) => {
+    try {
+      // Fade out menu music when the game starts
+      if (!gameStarted && data.sector !== null) {
+        gameStarted = true;
+        document.body.style.backgroundColor = "#000"; // Set background color to black
+        const settings = document.getElementById("settings-btn-desktop");
+        if (settings) {
+          settings.style.opacity = 0.5;
+        }
+        const roomCode = document.getElementById("room-code");
+        if (roomCode) {
+          roomCode.classList.add("minimized");
+          roomCode.innerText = roomCode.innerText.split(": ")[1];
+        }
+        stopMenuMusic(true); // This smoothly fades out the menu music
+      }
+
+      // Fetch world configuration to determine music
+      const response = await fetch("./js/world.json");
+      const worldConfig = await response.json();
+
+      const sectorName = data.sector || null;
+      const locationName = data.location || null;
+
+      const sectorConfig = sectorName
+        ? worldConfig.sectors.find((s) => s.name === sectorName)
+        : null;
+
+      const locationConfig =
+        locationName && sectorConfig?.locations
+          ? sectorConfig.locations.find((l) => l.name === locationName)
+          : null;
+
+      // --- ART MANAGEMENT ---
+      let artSource;
+      if (locationConfig?.art) {
+        artSource = locationConfig.art;
+      } else if (sectorConfig?.art) {
+        artSource = sectorConfig.art;
+      }
+
+      if (artSource) {
+        let background = document.getElementById("background-art");
+        background.classList.add("minimized");
+        setTimeout(() => {
+          background.src = `assets/art/game/${artSource}`;
+          background.classList.remove("minimized");
+        }, 1500);
+      }
+
+      // --- GENERIC AUDIO HANDLER ---
+      const handleAudio = (type, config, volumeSetting, useFadeIn) => {
+        let currentPath, loopGroup;
+        if (type === "music") {
+          currentPath = currentMusicPath;
+          loopGroup = window.currentMusicLoopGroup;
+        } else {
+          currentPath = currentAmbiencePath;
+          loopGroup = window.currentAmbienceLoopGroup;
+        }
+
+        const newAudioPath = config?.source
+          ? `assets/audio/${type}/game/${config.source}`
+          : null;
+
+        if (newAudioPath === currentPath) {
+          return; // Audio hasn't changed, do nothing.
+        }
+
+        // Fade out all old instances of this audio type
+        loopGroup.forEach((audio) => fadeOutAudio(audio));
+
+        if (type === "music") {
+          window.currentMusicLoopGroup = [];
+          currentMusicPath = newAudioPath;
+        } else {
+          window.currentAmbienceLoopGroup = [];
+          currentAmbiencePath = newAudioPath;
+        }
+
+        if (newAudioPath) {
+          const baseVolume = config.volume || 1.0;
+          const loopPoint = config.length; // in milliseconds
+          const safeVolumeSetting =
+            typeof volumeSetting === "number" && !isNaN(volumeSetting)
+              ? volumeSetting
+              : 1.0;
+          const targetVolume = baseVolume * safeVolumeSetting;
+
+          const playNewInstance = () => {
+            let checkPath =
+              type === "music" ? currentMusicPath : currentAmbiencePath;
+            if (checkPath !== newAudioPath) return; // Stale call, audio has changed again
+
+            const audio = new Audio(newAudioPath);
+
+            const currentGroup =
+              type === "music"
+                ? window.currentMusicLoopGroup
+                : window.currentAmbienceLoopGroup;
+            currentGroup.push(audio);
+
+            audio.addEventListener("ended", () => {
+              const index = currentGroup.indexOf(audio);
+              if (index > -1) currentGroup.splice(index, 1);
+            });
+
+            if (loopPoint) {
+              let loopTriggered = false;
+              audio.addEventListener("timeupdate", function () {
+                if (!loopTriggered && this.currentTime >= loopPoint / 1000) {
+                  loopTriggered = true;
+                  playNewInstance();
+                }
+              });
+            } else {
+              audio.loop = true;
+            }
+
+            // **FIX:** Set initial volume, call play(), THEN fade if needed.
+            // This is a more robust pattern for browsers.
+            audio.volume = useFadeIn ? 0 : targetVolume;
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  // Playback started. If fade-in is required, do it now.
+                  if (useFadeIn) {
+                    fadeInAudio(audio, targetVolume, 1000);
+                  }
+                })
+                .catch((e) =>
+                  console.error(`Audio play failed for ${type}:`, e)
+                );
+            }
+          };
+          playNewInstance();
+        }
+      };
+
+      // --- TRIGGER AUDIO FOR MUSIC AND AMBIENCE ---
+      let musicConfig;
+      let ambienceConfig;
+
+      if (locationConfig) {
+        // If a location is defined, ONLY use its audio. If a property is undefined, that means silence.
+        musicConfig = locationConfig.music;
+        ambienceConfig = locationConfig.ambience;
+      } else if (sectorConfig) {
+        // If no location, fall back to the sector's audio.
+        musicConfig = sectorConfig.music;
+        ambienceConfig = sectorConfig.ambience;
+      }
+
+      handleAudio("music", musicConfig, musicVolume, false);
+      handleAudio("ambience", ambienceConfig, ambienceVolume, true);
     } catch (error) {
-      console.error("Error handling gameState music:", error);
+      console.error("Error handling gameState audio:", error);
     }
   });
 }

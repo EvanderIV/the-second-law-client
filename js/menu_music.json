@@ -24,6 +24,11 @@
       "source": "assets/audio/music/menu/ancient_magic.mp3",
       "length": 135000,
       "volume": 0.5
+    },
+    {
+      "source": "assets/audio/music/menu/kamino.mp3",
+      "length": 100000,
+      "volume": 0.5
     }
   ]
 }

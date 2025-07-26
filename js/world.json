@@ -3,17 +3,62 @@
     {
       "name": "Inner City",
       "description": "The bustling heart of the city, filled with towering skyscrapers and vibrant nightlife.",
-      "art": "inner_city/inner_city.jpg",
+      "art": "inner_city/inner_city.webp",
+      "music": {
+        "source": "inner_city/inner_city.mp3",
+        "volume": 0.5,
+        "length": 180000
+      },
+      "ambience": {
+        "source": "inner_city/street_noises.mp3",
+        "volume": 0.1,
+        "length": 81000
+      },
       "locations": [
+        {
+          "name": "Skyline Smiles Surgical Center",
+          "description": "An outwardly-attractive surgical center that offers a range of cosmetic and cyberware procedures.",
+          "art": "inner_city/hospital.webp",
+          "music": {
+            "source": "inner_city/hospital.mp3",
+            "volume": 0.5,
+            "length": 333000
+          },
+          "altmusic": {
+            "source": "inner_city/hospital_alt.mp3",
+            "volume": 0.4,
+            "length": 233000
+          },
+          "ambience": {
+            "source": "inner_city/hospital.mp3",
+            "volume": 0.5,
+            "length": 181000
+          }
+        },
         {
           "name": "Central Plaza",
           "description": "A large open space surrounded by shops and cafes, often hosting events.",
-          "art": "inner_city/central_plaza.jpg"
+          "art": "inner_city/central_plaza.webp",
+          "music": {
+            "source": "inner_city/central_plaza.mp3",
+            "volume": 0.5,
+            "length": 120000
+          }
         },
         {
           "name": "MacDougall's",
           "description": "The popular choice amongst locals for a quick bite, though the food is questionable.",
-          "art": "inner_city/city_hall.jpg"
+          "art": "inner_city/macdougalls.webp",
+          "music": {
+            "source": "inner_city/macdougalls.mp3",
+            "volume": 0.5,
+            "length": 235000
+          },
+          "ambience": {
+            "source": "inner_city/restaurant_beeping.mp3",
+            "volume": 0.1,
+            "length": 14300
+          }
         }
       ]
     }

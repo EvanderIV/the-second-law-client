@@ -53,6 +53,7 @@ body {
   /*transition: all 0.2s ease;*/
   overflow: hidden;
   font-family: sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body.darkable.darkmode {
@@ -587,6 +588,7 @@ input:checked + .slider:before {
   border-radius: 8px;
   transition: all 0.2s ease;
   z-index: 100;
+  transition: opacity 0.3s ease;
 }
 
 #room-code.darkmode {
@@ -597,7 +599,17 @@ input:checked + .slider:before {
 #room-code img {
   width: 100%;
   height: auto;
+  max-height: 40vmin;
   image-rendering: pixelated;
+  transition: max-height 1.5s ease;
+}
+
+#room-code.minimized {
+  opacity: 0.5;
+  font-size: 2rem;
+}
+#room-code.minimized img {
+  max-height: 0;
 }
 
 #create-lobby {
@@ -1010,126 +1022,20 @@ input:disabled {
   color: #ffffff;
 }
 
-/* Card System Styles */
-#card-hand {
-  position: fixed;
-  bottom: 2vh;
+#background-art {
+  position: absolute;
+  top: 0;
   left: 0;
-  width: 100%;
-  height: 30vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2vh;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-}
-
-#card-hand.show {
-  visibility: visible;
-  opacity: 1;
-}
-
-#cards-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  height: 80%;
-  width: 100%;
-  padding: 0 5vw;
-  position: relative;
-}
-
-.game-card {
-  width: 15vw;
-  height: 22vw;
-  background-color: #ffffff;
-  border: 2px solid #999999;
-  border-radius: 8px;
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8vw;
-  transition: transform 0.3s ease;
-  transform-origin: bottom center;
-  cursor: pointer;
-  user-select: none;
-}
-
-.game-card.darkmode {
-  background-color: #666666;
-  border-color: #222222;
-  color: #ffffff;
-}
-
-.game-card.selected {
-  transform: translateY(-5vh);
-}
-
-.game-card[data-suit="hearts"],
-.game-card[data-suit="diamonds"] {
-  color: #ff0000;
-}
-
-.game-card.darkmode[data-suit="hearts"],
-.game-card.darkmode[data-suit="diamonds"] {
-  color: #ff6666;
-}
-
-@keyframes cardHover {
-  0%,
-  100% {
-    transform: translateY(-5vh);
-  }
-  50% {
-    transform: translateY(-6vh);
-  }
-}
-
-.game-card.selected {
-  animation: cardHover 2s ease-in-out infinite;
-}
-
-#confirm-cards {
-  height: 15%;
-  padding: 10px 20px;
-  font-size: 2rem;
-  border: 2px solid #0088cc;
-  background-color: #22bbff;
-  color: #ffffff;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-#confirm-cards:disabled {
-  background-color: #cccccc;
-  border-color: #999999;
-  color: #666666;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-#confirm-cards.darkmode {
-  background-color: #666666;
-  border-color: #222222;
-  color: #ffffff;
-}
-
-#confirm-cards.darkmode:disabled {
-  background-color: #444444;
-  border-color: #222222;
-  color: #888888;
-}
-
-#confirm-cards:not(:disabled):hover {
-  background-color: #33ccff;
-}
-
-#game-grid {
-  position: absolute;
-  width: 100%;
   height: 100%;
+  width: auto;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 1.5s ease, height 2.5s ease;
+  mask-image: linear-gradient(to right, black, transparent);
+}
+#background-art.minimized {
+  opacity: 0;
+  height: 102.5%;
 }

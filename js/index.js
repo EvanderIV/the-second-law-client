@@ -177,8 +177,13 @@ if (!document.cookie.includes("playJoinSounds")) {
   setCookie("playJoinSounds", "1");
 }
 let musicVolume = cookies.musicVolume ? parseFloat(cookies.musicVolume) : 0.5;
+let ambienceVolume = cookies.ambienceVolume
+  ? parseFloat(cookies.ambienceVolume)
+  : 0.5;
 let sfxVolume = cookies.sfxVolume ? parseFloat(cookies.sfxVolume) : 0.5;
 let playJoinSounds = cookies.playJoinSounds !== "0";
+
+export { musicVolume, ambienceVolume, sfxVolume, playJoinSounds };
 
 // --- Updated Audio Handling Logic Starts ---
 async function playOneShot(url, volume) {
@@ -272,7 +277,7 @@ window.playBackgroundMusic = async function (
       if (currentTrack === trackInstance && currentMusicUrl === url) {
         scheduleNextLoop(trackInstance);
       }
-    }, (loopTime - AUDIO_BUFFER_OFFSET - (audioContext.currentTime - startTime)) * 1000); // Adjust timeout based on actual start and loop duration
+    }, loopTime - AUDIO_BUFFER_OFFSET - (audioContext.currentTime - startTime) * 1000); // Adjust timeout based on actual start and loop duration
   }
 
   currentTrack = new MusicTrack(
@@ -289,7 +294,10 @@ window.playBackgroundMusic = async function (
  * @param {number} targetAbsoluteVolume - The absolute target base volume (e.g., global musicVolume, 0.0 to 1.0).
  * @param {number} duration - The duration of the fade in milliseconds.
  */
-function fadeBackgroundMusic(targetAbsoluteVolume, duration) {
+window.fadeBackgroundMusic = function fadeBackgroundMusic(
+  targetAbsoluteVolume,
+  duration
+) {
   if (!audioContext || !currentTrack || !currentTrack.gainNode) {
     return;
   }
@@ -310,7 +318,7 @@ function fadeBackgroundMusic(targetAbsoluteVolume, duration) {
 
   // Update currentTrackNominalVolume to reflect the new actual gain of the track
   currentTrackNominalVolume = finalTrackVolume;
-}
+};
 // --- Updated Audio Handling Logic Ends ---
 
 let skin = 1;
@@ -1133,61 +1141,6 @@ countdownDisplay.style.cssText =
   "display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); z-index: 1000;";
 document.body.appendChild(countdownDisplay);
 
-function startCountdown() {
-  if (countdownTimer || gameStarting) return;
-  let countdown = 3;
-  countdownDisplay.style.display = "block";
-  gameStarting = true;
-  fadeBackgroundMusic(0, 3000); // Fade to zero (base volume 0) over the countdown duration
-
-  function updateCountdown() {
-    if (countdown > 0) {
-      countdownDisplay.textContent = countdown;
-      playOneShot(getRandomCountdownSound(), 0.1 * sfxVolume);
-      countdown--;
-      countdownTimer = setTimeout(updateCountdown, 1000);
-    } else {
-      countdownDisplay.textContent = "GO!";
-      playOneShot(getRandomStartSound(), 0.07 * sfxVolume);
-
-      if (isHost && typeof networkManager !== "undefined") {
-        const socket = networkManager.getSocket();
-        if (socket && socket.connected) {
-          socket.emit("gameStart");
-        } else {
-          console.warn("Socket not connected for game start");
-          startGame();
-        }
-      } else if (!isHost) {
-        // Clients will wait for onGameStarting event, but for local/testing:
-        // startGame();
-      } else {
-        // Host but no networkManager (offline testing)
-        startGame();
-      }
-
-      setTimeout(() => {
-        countdownDisplay.style.display = "none";
-        // startGame() is called by onGameStarting event from server for host too,
-        // or directly if no network.
-      }, 1000);
-      countdownTimer = null;
-    }
-  }
-  updateCountdown();
-}
-
-function cancelCountdown() {
-  if (countdownTimer) {
-    clearTimeout(countdownTimer);
-    countdownTimer = null;
-  }
-  gameStarting = false;
-  countdownDisplay.style.display = "none";
-  // Restore to global musicVolume (fadeBackgroundMusic will apply track modifier)
-  fadeBackgroundMusic(musicVolume, 2000);
-}
-
 function checkAllPlayersReady() {
   if (players.length === 0 && isHost) return false; // Host alone cannot start
   if (players.length > 0) {
@@ -1457,40 +1410,4 @@ function updatePlayerCount() {
       }
     }
   }
-}
-
-// Add card dealing to game start
-function startGame() {
-  gameStarting = false; // Ensure this is reset
-
-  // Stop current lobby music if playing
-  if (currentTrack) {
-    currentTrack.stop();
-    currentTrack = null; // Clear current track
-  }
-
-  if (isMobileUser && !isHost) {
-    const nicknameInput = document.getElementById("nickname");
-    const readyWrapper = document.getElementById("ready-wrapper");
-    const suitSquares = document.getElementById("suit-squares");
-    const settingsButton = document.getElementById("settings-button");
-    const settingsDiv = document.getElementById("settings-div");
-
-    if (nicknameInput) nicknameInput.style.display = "none";
-    if (readyWrapper) readyWrapper.style.display = "none";
-    if (suitSquares) suitSquares.style.display = "none";
-    if (settingsButton) settingsButton.style.display = "none";
-    if (settingsDiv) settingsDiv.style.display = "none";
-  } else {
-    // For host and desktop clients, or if it's a general game start scenario
-    playBackgroundMusic(
-      "./assets/audio/background_music.mp3",
-      0.4,
-      musicVolume,
-      209.4
-    );
-  }
-  dealStartingHand(); // Deal cards when game starts
-
-  console.log("Game starting!");
 }

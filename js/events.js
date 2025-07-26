@@ -1,3 +1,5 @@
+import { gameStarted } from "./networking.js";
+
 window.mobileAndTabletCheck = function () {
   let check = false;
   (function (a) {
@@ -21,8 +23,38 @@ let menuMusicData = null;
 let currentMenuMusic = null;
 let recentlyPlayedMenuMusic = [];
 const MAX_RECENT_TRACKS = 3;
-const ENABLE_MUSIC_FADING = false; // Set to false to disable fading
-const FADE_DURATION = 2000; // Fade duration in milliseconds
+const ENABLE_MUSIC_INTERFADING = false; // Enable fading for menu music
+const FADE_DURATION = 3000; // Fade duration in milliseconds
+
+// Function to stop menu music with fade
+export function stopMenuMusic(fade) {
+  if (currentMenuMusic) {
+    const audioElement = currentMenuMusic;
+    // Start fade out
+    if (fade) {
+      const fadeInterval = 50; // Update every 50ms
+      const steps = FADE_DURATION / fadeInterval;
+      const volumeStep = audioElement.volume / steps;
+      let currentStep = 0;
+
+      const fadeOut = setInterval(() => {
+        currentStep++;
+        audioElement.volume = Math.max(0, audioElement.volume - volumeStep);
+
+        if (currentStep >= steps || audioElement.volume <= 0) {
+          clearInterval(fadeOut);
+          audioElement.pause();
+          audioElement.remove();
+          currentMenuMusic = null;
+        }
+      }, fadeInterval);
+    } else {
+      audioElement.pause();
+      audioElement.remove();
+      currentMenuMusic = null;
+    }
+  }
+}
 
 // Load menu music data
 async function loadMenuMusic() {
@@ -76,7 +108,7 @@ export function startMenuMusic() {
   const newTrack = new Audio(track.source);
   const targetVolume = track.volume || 0.5;
 
-  if (ENABLE_MUSIC_FADING) {
+  if (ENABLE_MUSIC_INTERFADING) {
     // Start with zero volume for smooth fade in
     newTrack.volume = 0;
 
@@ -92,7 +124,7 @@ export function startMenuMusic() {
         if (progress >= 1) {
           clearInterval(fadeOut);
           // Don't pause the old track, let it play until it ends naturally
-          if (ENABLE_MUSIC_FADING) {
+          if (ENABLE_MUSIC_INTERFADING) {
             oldTrack.volume = 0;
           }
         } else {
@@ -142,15 +174,10 @@ export function startMenuMusic() {
 
   // Schedule next track
   setTimeout(() => {
-    startMenuMusic();
-  }, track.length - (ENABLE_MUSIC_FADING ? FADE_DURATION : 0)); // Start transition early only if fading is enabled
-}
-
-export function stopMenuMusic() {
-  if (currentMenuMusic) {
-    currentMenuMusic.pause();
-    currentMenuMusic = null;
-  }
+    if (!gameStarted) {
+      startMenuMusic();
+    }
+  }, track.length - (ENABLE_MUSIC_INTERFADING ? FADE_DURATION : 0)); // Start transition early only if fading is enabled
 }
 
 // Event handling system
