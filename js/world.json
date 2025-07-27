@@ -21,19 +21,20 @@
           "art": "inner_city/hospital.webp",
           "music": {
             "source": "inner_city/hospital.mp3",
-            "volume": 0.5,
+            "volume": 0.3,
             "length": 333000
           },
           "altmusic": {
             "source": "inner_city/hospital_alt.mp3",
-            "volume": 0.4,
+            "volume": 0.3,
             "length": 233000
           },
           "ambience": {
             "source": "inner_city/hospital.mp3",
-            "volume": 0.5,
+            "volume": 0.6,
             "length": 181000
-          }
+          },
+          "actors": ["Cedric James"]
         },
         {
           "name": "Central Plaza",
@@ -58,7 +59,8 @@
             "source": "inner_city/restaurant_beeping.mp3",
             "volume": 0.1,
             "length": 14300
-          }
+          },
+          "actors": ["Cedric James"]
         }
       ]
     }

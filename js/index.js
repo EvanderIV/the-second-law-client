@@ -170,6 +170,9 @@ function getRandomSillyName() {
 if (!document.cookie.includes("musicVolume")) {
   setCookie("musicVolume", "0.5");
 }
+if (!document.cookie.includes("ambienceVolume")) {
+  setCookie("ambienceVolume", "0.5");
+}
 if (!document.cookie.includes("sfxVolume")) {
   setCookie("sfxVolume", "0.5");
 }
@@ -183,11 +186,17 @@ let ambienceVolume = cookies.ambienceVolume
 let sfxVolume = cookies.sfxVolume ? parseFloat(cookies.sfxVolume) : 0.5;
 let playJoinSounds = cookies.playJoinSounds !== "0";
 
-export { musicVolume, ambienceVolume, sfxVolume, playJoinSounds };
-
 // --- Updated Audio Handling Logic Starts ---
-async function playOneShot(url, volume) {
-  if (!volume) return; // Don't play if volume is 0
+/**
+ * Plays a sound effect once, applying the global SFX volume setting.
+ * @param {string} url - The URL of the audio file.
+ * @param {number} [baseVolume=1.0] - The intrinsic volume of the sound, from 0.0 to 1.0.
+ */
+async function playOneShot(url, baseVolume = 1.0) {
+  // The final volume is the provided baseVolume multiplied by the global sfxVolume setting.
+  const finalVolume = baseVolume * sfxVolume;
+
+  if (finalVolume <= 0) return; // Don't play if volume is 0 or less.
   await initAudioContext();
 
   try {
@@ -198,7 +207,7 @@ async function playOneShot(url, volume) {
     const gainNode = audioContext.createGain();
 
     source.buffer = buffer;
-    gainNode.gain.value = volume; // Volume is pre-calculated with sfxVolume at call site
+    gainNode.gain.value = finalVolume; // Use the calculated final volume
 
     source.connect(gainNode);
     gainNode.connect(masterGainNode);
@@ -233,6 +242,7 @@ window.playBackgroundMusic = async function (
   globalVolume = musicVolume,
   customLoopTime
 ) {
+  if (isMobileUser) return;
   await initAudioContext();
 
   const AUDIO_BUFFER_OFFSET = 0.0; // Offset to ensure smooth looping
@@ -299,8 +309,12 @@ window.fadeBackgroundMusic = function fadeBackgroundMusic(
   duration
 ) {
   if (!audioContext || !currentTrack || !currentTrack.gainNode) {
+    // Update the global volume anyway, so if music starts it has the right volume.
+    musicVolume = targetAbsoluteVolume;
     return;
   }
+
+  musicVolume = targetAbsoluteVolume; // Ensure global volume is updated.
 
   const now = audioContext.currentTime;
   // Calculate the final target gain for the track's gain node
@@ -725,22 +739,53 @@ if (!document.getElementById("error-message")) {
 
 if (!isMobileUser) {
   const musicVolumeSlider = document.getElementById("music-volume");
+  const ambienceVolumeSlider = document.getElementById("ambience-volume");
   const sfxVolumeSlider = document.getElementById("sfx-volume");
   const playJoinSoundsToggle = document.getElementById("play-join-sounds");
 
   if (musicVolumeSlider) {
     musicVolumeSlider.value = musicVolume * 100; // Initialize slider position
     musicVolumeSlider.addEventListener("input", (e) => {
-      const newMusicVolume = parseFloat(e.target.value) / 100; // Get new base volume from slider
-      musicVolume = newMusicVolume; // Update the global musicVolume variable
-      setCookie("musicVolume", musicVolume.toString()); // Save to cookie
+      const newMusicVolume = parseFloat(e.target.value) / 100;
+      setCookie("musicVolume", newMusicVolume.toString());
 
-      // If there's a current track and audio context, fade its volume.
-      // fadeBackgroundMusic will use the new global musicVolume and the track's
-      // currentTrackModifier to set the correct gain. It also updates
-      // currentTrackNominalVolume internally.
-      if (currentTrack && audioContext) {
-        fadeBackgroundMusic(newMusicVolume, 50); // Fade to newMusicVolume over 50ms (short for responsiveness)
+      // Update Web Audio API music (menu music)
+      // This will call fadeBackgroundMusic which sets the global musicVolume
+      fadeBackgroundMusic(newMusicVolume, 50);
+
+      // Update HTML5 audio music (in-game music)
+      if (
+        window.currentMusicLoopGroup &&
+        window.currentMusicLoopGroup.length > 0
+      ) {
+        window.currentMusicLoopGroup.forEach((audio) => {
+          if (audio.dataset.baseVolume) {
+            audio.volume =
+              parseFloat(audio.dataset.baseVolume) * newMusicVolume;
+          }
+        });
+      }
+    });
+  }
+
+  if (ambienceVolumeSlider) {
+    ambienceVolumeSlider.value = ambienceVolume * 100; // FIX: Initialize with ambienceVolume
+    ambienceVolumeSlider.addEventListener("input", (e) => {
+      const newAmbienceVolume = parseFloat(e.target.value) / 100;
+      ambienceVolume = newAmbienceVolume; // Update the global ambienceVolume variable
+      setCookie("ambienceVolume", ambienceVolume.toString()); // FIX: Save ambienceVolume to cookie
+
+      // Update HTML5 audio ambience (in-game ambience)
+      if (
+        window.currentAmbienceLoopGroup &&
+        window.currentAmbienceLoopGroup.length > 0
+      ) {
+        window.currentAmbienceLoopGroup.forEach((audio) => {
+          if (audio.dataset.baseVolume) {
+            audio.volume =
+              parseFloat(audio.dataset.baseVolume) * newAmbienceVolume;
+          }
+        });
       }
     });
   }
@@ -1217,197 +1262,5 @@ function resetGameState() {
   console.log("Game state reset (host disconnected?).");
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    updateReadyButtonState();
-    updateGridVisibility();
-  });
-} else {
-  updateReadyButtonState();
-  updateGridVisibility();
-}
-
-// Card handling constants and variables
-const STARTING_HAND_SIZE = 5;
-const CARD_SUITS = ["hearts", "diamonds", "clubs", "spades"];
-const CARD_VALUES = [
-  "A",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  "J",
-  "Q",
-  "K",
-];
-
-// Boat placement constants and functions
-const MIN_BOAT_DISTANCE = 3; // Minimum squares between boats
-const MIN_CENTER_DISTANCE = 2; // Minimum squares from center
-const BOAT_SIZE = 2; // Size of boat in grid squares (2x2)
-
-function createGridArray(size) {
-  return Array(size)
-    .fill(null)
-    .map(() => Array(size).fill(false));
-}
-
-function isValidBoatPlacement(grid, x, y, gridSize) {
-  if (x < 0 || x + BOAT_SIZE > gridSize || y < 0 || y + BOAT_SIZE > gridSize)
-    return false;
-
-  // Check if too close to center
-  const center = gridSize / 2;
-  const distToCenter = Math.min(
-    Math.abs(x + 1 - center),
-    Math.abs(x + BOAT_SIZE - center),
-    Math.abs(y + 1 - center),
-    Math.abs(y + BOAT_SIZE - center)
-  );
-  if (distToCenter < MIN_CENTER_DISTANCE) return false;
-
-  // Check surrounding area for other boats
-  for (
-    let checkY = Math.max(0, y - MIN_BOAT_DISTANCE);
-    checkY < Math.min(gridSize, y + BOAT_SIZE + MIN_BOAT_DISTANCE);
-    checkY++
-  ) {
-    for (
-      let checkX = Math.max(0, x - MIN_BOAT_DISTANCE);
-      checkX < Math.min(gridSize, x + BOAT_SIZE + MIN_BOAT_DISTANCE);
-      checkX++
-    ) {
-      if (grid[checkY][checkX]) return false;
-    }
-  }
-  return true;
-}
-
-function placeBoats(numPlayers) {
-  const playerAreaSide = 2;
-  const spacingLogCoefficient = 0.5;
-  const offset = 4;
-  const logAlgorithm =
-    100 /
-    ((playerAreaSide + spacingLogCoefficient * Math.log(numPlayers)) *
-      Math.sqrt(numPlayers) +
-      offset);
-  const linearAlgorithm = 100 / (playerAreaSide * numPlayers + offset);
-  const division = numPlayers > 2 ? linearAlgorithm : 100 / 8;
-
-  // Calculate grid size based on viewport divisions
-  const gridSize = Math.floor(100 / division);
-  let grid = createGridArray(gridSize);
-  let boatPositions = [];
-  let attempts = 0;
-  const maxAttempts = 1000;
-
-  while (boatPositions.length < numPlayers && attempts < maxAttempts) {
-    if (attempts > 0 && boatPositions.length === 0) {
-      // Reset grid if we can't place any boats
-      grid = createGridArray(gridSize);
-    }
-
-    const x = Math.floor(Math.random() * (gridSize - BOAT_SIZE));
-    const y = Math.floor(Math.random() * (gridSize - BOAT_SIZE));
-
-    if (isValidBoatPlacement(grid, x, y, gridSize)) {
-      // Mark boat position in grid
-      for (let dy = 0; dy < BOAT_SIZE; dy++) {
-        for (let dx = 0; dx < BOAT_SIZE; dx++) {
-          grid[y + dy][x + dx] = true;
-        }
-      }
-
-      boatPositions.push({ x, y });
-
-      if (boatPositions.length === numPlayers) {
-        return {
-          positions: boatPositions,
-          gridSize: gridSize,
-          division: division,
-        };
-      }
-    }
-
-    attempts++;
-    if (attempts >= maxAttempts) {
-      // Start over if we can't place all boats
-      attempts = 0;
-      boatPositions = [];
-      grid = createGridArray(gridSize);
-    }
-  }
-
-  return null; // Should never reach here unless something is wrong
-}
-
-function updatePlayerCount() {
-  const playerList = document.getElementById("player-list");
-  const playerCountDisplay = document.getElementById("player-count");
-  const header = playerList?.querySelector("h2");
-
-  if (!playerList) return;
-
-  const count = players.length;
-
-  if (playerCountDisplay) {
-    playerCountDisplay.textContent = `Players: ${count}`;
-  }
-
-  if (header) {
-    header.textContent = `Players (${count})`;
-  }
-
-  const sqrElement = document.getElementById("sqr");
-  if (sqrElement) {
-    const boatLayout = placeBoats(count);
-    if (boatLayout) {
-      const { positions, division } = boatLayout;
-      sqrElement.style.backgroundSize = `${division}% ${division}%, ${division}% ${division}%, 20% 20%`;
-      // Clear existing boats
-      const gameGrid = document.getElementById("game-grid");
-      if (gameGrid) {
-        gameGrid.innerHTML = "";
-
-        // Position each boat
-        positions.forEach((pos, index) => {
-          if (index < players.length) {
-            const player = players[index];
-
-            // Create boat container
-            const boatDiv = document.createElement("div");
-            boatDiv.className = "boat";
-            boatDiv.id = `boat-${player.name}`;
-
-            // Calculate position
-            const left = pos.x * division + "%";
-            const top = pos.y * division + "cqw";
-            const width = BOAT_SIZE * division + "%";
-            const height = BOAT_SIZE * division + "cqw";
-
-            boatDiv.style.left = left;
-            boatDiv.style.top = top;
-            boatDiv.style.width = width;
-            boatDiv.style.height = height;
-
-            // Create corner images
-            ["ur", "ul", "ll", "lr"].forEach((corner) => {
-              const img = document.createElement("img");
-              img.className = `boat-corner ${corner}`;
-              img.src = `./assets/boats/${player.skinId}/${corner}.png`;
-              boatDiv.appendChild(img);
-            });
-
-            gameGrid.appendChild(boatDiv);
-          }
-        });
-      }
-    }
-  }
-}
+// Make sure to export all necessary functions and variables
+export { musicVolume, ambienceVolume, sfxVolume, playJoinSounds, playOneShot };

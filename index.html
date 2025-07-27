@@ -17,10 +17,6 @@
 			<input id="game-code" class="input-uppercase single-line-textarea darkable themeable" style="margin-top: 2cqw; height: 8cqw;" type="search" name="game-code-input" placeholder="Room Code" maxlength="4"></input>
 			<button id="join-button" class="darkable themeable" disabled style="margin-top: 1cqw; height: 6cqw;">JOIN</button>
 			<div id="error-message"></div>
-			<div id="ready-wrapper" class="ready-wrapper mobile-only">
-				<div id="ready-button" class="darkable themeable" role="button" tabindex="0" aria-disabled="true" style="display: none;"></div>
-				<p id="ready-text" class="ready-text darkable themeable" style="z-index: 2000; display: none;">Ready</p>
-			</div>
 			<p id="settings-button" class="mobile-only darkable themeable">SETTINGS</p>
 			<div id="settings-div" class="mobile-only darkable themeable">
 				<audio id="settings-open-sfx" src="./audio/paper_slide_in.mp3"></audio>
@@ -67,6 +63,10 @@
 						<div class="setting-item">
 							<label for="music-volume">Music Volume</label>
 							<input type="range" id="music-volume" min="0" max="100" value="20">
+						</div>
+						<div class="setting-item">
+							<label for="ambience-volume">Ambience Volume</label>
+							<input type="range" id="ambience-volume" min="0" max="100" value="30">
 						</div>
 						<div class="setting-item">
 							<label for="sfx-volume">Sound Effects Volume</label>

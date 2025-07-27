@@ -1,4 +1,5 @@
 import { gameStarted } from "./networking.js";
+import { playOneShot } from "./index.js"; // Import the corrected audio function
 
 window.mobileAndTabletCheck = function () {
   let check = false;
@@ -236,34 +237,32 @@ export function playEvent(eventName) {
   }
   console.log("Playing event:", event);
 
-  // Play sound if specified
+  // Play sound if specified for desktop
   if (!isMobileUser && event.sound) {
-    const audio = new Audio(`assets/audio/events/${event.sound}`);
+    const soundPath = `assets/audio/events/${event.sound}`;
+    const volume = event.soundVolume !== undefined ? event.soundVolume : 1.0;
+
     if (event.soundDelay !== undefined && event.soundDelay > 0) {
       setTimeout(() => {
-        audio
-          .play()
-          .catch((error) => console.error("Error playing sound:", error));
+        playOneShot(soundPath, volume);
       }, event.soundDelay * 1000);
     } else {
-      audio
-        .play()
-        .catch((error) => console.error("Error playing sound:", error));
+      playOneShot(soundPath, volume);
     }
   }
 
+  // Play sound if specified for mobile
   if (isMobileUser && event.remoteSound) {
-    const audio = new Audio(`assets/audio/events/${event.remoteSound}`);
+    const soundPath = `assets/audio/events/${event.remoteSound}`;
+    const volume =
+      event.remoteSoundVolume !== undefined ? event.remoteSoundVolume : 1.0;
+
     if (event.remoteSoundDelay !== undefined && event.remoteSoundDelay > 0) {
       setTimeout(() => {
-        audio
-          .play()
-          .catch((error) => console.error("Error playing sound:", error));
+        playOneShot(soundPath, volume);
       }, event.remoteSoundDelay * 1000);
     } else {
-      audio
-        .play()
-        .catch((error) => console.error("Error playing sound:", error));
+      playOneShot(soundPath, volume);
     }
   }
 
