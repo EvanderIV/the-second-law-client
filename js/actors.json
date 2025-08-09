@@ -1,0 +1,177 @@
+{
+  "music": [
+    {
+      "J.A.N.U.S.": [
+        {
+          "trigger": "interact",
+          "art": "janus/janus.png",
+          "music": {
+            "source": "actors/janus_theme0.mp3",
+            "volume": 0.3,
+            "length": 105000
+          }
+        },
+        {
+          "trigger": "sad",
+          "art": "janus/janus_sad.png",
+          "music": {
+            "source": "actors/janus_theme0.mp3",
+            "volume": 0.3,
+            "length": 105000
+          }
+        },
+        {
+          "trigger": "angry",
+          "art": "janus/janus_angry.png",
+          "music": {
+            "source": "actors/janus_theme0.mp3",
+            "volume": 0.3,
+            "length": 105000
+          }
+        },
+        {
+          "trigger": "battle",
+          "art": "janus/janus_battle.png",
+          "music": {
+            "source": "actors/janus_battle.mp3",
+            "volume": 0.4,
+            "length": 167000
+          }
+        },
+        {
+          "trigger": "hard battle",
+          "art": "janus/janus_battle_hard.png",
+          "music": {
+            "source": "actors/janus_battle_hard.mp3",
+            "volume": 0.3,
+            "length": 250000
+          }
+        }
+      ],
+      "Cédric James": [
+        {
+          "trigger": "interact",
+          "art": "cedricjames/cedricjames.png",
+          "music": {
+            "source": "actors/cedricjames_theme0.mp3",
+            "volume": 0.3,
+            "length": 112000
+          }
+        },
+        {
+          "trigger": "angry",
+          "art": "cedricjames/cedricjames_angry.png",
+          "music": {
+            "source": "actors/cedricjames_theme0.mp3",
+            "volume": 0.3,
+            "length": 211000
+          }
+        },
+        {
+          "trigger": "battle",
+          "art": "cedricjames/cedricjames_battle.png",
+          "music": {
+            "source": "actors/cedricjames_battle.mp3",
+            "volume": 0.3,
+            "length": 130000
+          },
+          "ambience": {
+            "source": "",
+            "volume": 0.1,
+            "length": 130000
+          }
+        },
+        {
+          "trigger": "hard battle",
+          "art": "cedricjames/cedricjames_battle_hard.png",
+          "music": {
+            "source": "actors/cedricjames_battle_hard.mp3",
+            "volume": 0.3,
+            "length": 156800
+          },
+          "ambience": {
+            "source": "",
+            "volume": 0.1,
+            "length": 130000
+          }
+        }
+      ],
+      "Saburo Amon": [
+        {
+          "trigger": "interact",
+          "art": "saburoamon/saburoamon.png",
+          "music": {
+            "source": "actors/saburoamon_theme0.mp3",
+            "volume": 0.7,
+            "length": 79000
+          }
+        },
+        {
+          "trigger": "wide-eyed",
+          "art": "saburoamon/saburoamon_wide_eyed.png",
+          "music": {
+            "source": "actors/saburoamon_theme0.mp3",
+            "volume": 0.7,
+            "length": 79000
+          }
+        },
+        {
+          "trigger": "battle",
+          "art": "saburoamon/saburoamon_battle.png",
+          "music": {
+            "source": "actors/saburoamon_battle.mp3",
+            "volume": 0.6,
+            "length": 78000
+          }
+        },
+        {
+          "trigger": "hard battle",
+          "art": "saburoamon/saburoamon_battle_hard.png",
+          "music": {
+            "source": "actors/saburoamon_battle_hard.mp3",
+            "volume": 0.6,
+            "length": 205500
+          }
+        }
+      ],
+      "Jack Nickle": [
+        {
+          "trigger": "interact",
+          "art": "jacknickle/jacknickle.png",
+          "music": {
+            "source": "actors/jacknickle_theme0.mp3",
+            "volume": 0.7,
+            "length": 112300
+          }
+        },
+        {
+          "trigger": "jacketless",
+          "art": "jacknickle/jacknickle_jacketless.png",
+          "music": {
+            "source": "actors/jacknickle_theme0.mp3",
+            "volume": 0.7,
+            "length": 112300
+          }
+        },
+        {
+          "trigger": "battle",
+          "art": "jacknickle/jacknickle_battle.png",
+          "music": {
+            "source": "actors/jacknickle_battle.mp3",
+            "volume": 0.6,
+            "length": 232000
+          }
+        },
+        {
+          "trigger": "hard battle",
+          "art": "jacknickle/jacknickle_battle_hard.png",
+          "music": {
+            "source": "actors/jacknickle_battle_hard.mp3",
+            "volume": 0.7,
+            "length": 310800
+          }
+        }
+      ]
+    }
+  ]
+}

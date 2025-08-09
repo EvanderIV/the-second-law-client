@@ -34,6 +34,13 @@
       "vibrationDelay": 0.0
     },
     {
+      "name": "Gunshot",
+      "art": "gunshot.jpg",
+      "sound": "gunshot.mp3",
+      "soundVolume": 1.0,
+      "soundDelay": 0.0
+    },
+    {
       "name": "Light Explosion",
       "art": "light_explosion.jpg",
       "sound": "light_explosion.mp3",

@@ -10,7 +10,7 @@
         "length": 180000
       },
       "ambience": {
-        "source": "inner_city/street_noises.mp3",
+        "source": "street_noises.mp3",
         "volume": 0.1,
         "length": 81000
       },
@@ -30,11 +30,11 @@
             "length": 233000
           },
           "ambience": {
-            "source": "inner_city/hospital.mp3",
+            "source": "hospital.mp3",
             "volume": 0.6,
             "length": 181000
           },
-          "actors": ["Cedric James"]
+          "actors": ["Cédric James"]
         },
         {
           "name": "Central Plaza",
@@ -42,9 +42,15 @@
           "art": "inner_city/central_plaza.webp",
           "music": {
             "source": "inner_city/central_plaza.mp3",
+            "volume": 0.4,
+            "length": 150600
+          },
+          "ambience": {
+            "source": "distant_voices.mp3",
             "volume": 0.5,
-            "length": 120000
-          }
+            "length": 498500
+          },
+          "actors": ["Cédric James"]
         },
         {
           "name": "MacDougall's",
@@ -56,11 +62,125 @@
             "length": 235000
           },
           "ambience": {
-            "source": "inner_city/restaurant_beeping.mp3",
+            "source": "restaurant_beeping.mp3",
             "volume": 0.1,
             "length": 14300
           },
-          "actors": ["Cedric James"]
+          "actors": ["Cédric James"]
+        },
+        {
+          "name": "Pablo's Tacos Y Tequila",
+          "description": "A vibrant pub known for its spicy food and lively atmosphere, often filled with laughter and Mexican music.",
+          "art": "inner_city/pablos_tacos.webp",
+          "music": {
+            "source": "inner_city/pablos_tacos.mp3",
+            "volume": 0.5,
+            "length": 196000
+          },
+          "ambience": {
+            "source": "crowded_restaurant.mp3",
+            "volume": 0.5,
+            "length": 198000
+          },
+          "actors": ["Cédric James"]
+        }
+      ]
+    },
+    {
+      "name": "Corporate District",
+      "description": "The sleek and polished area of the city, dominated by corporate skyscrapers and high-end shops.",
+      "art": "corporate_district/corporate_district.webp",
+      "music": {
+        "source": "corporate_district/corporate_district.mp3",
+        "volume": 0.4,
+        "length": 120000
+      },
+      "ambience": {
+        "source": "street_noises.mp3",
+        "volume": 0.075,
+        "length": 90000
+      },
+      "locations": [
+        {
+          "name": "Corporate Tower",
+          "description": "A towering structure housing the offices of the city's most powerful corporations.",
+          "art": "corporate_district/corporate_tower.webp",
+          "music": {
+            "source": "corporate_district/corporate_tower.mp3",
+            "volume": 0.4,
+            "length": 150000
+          },
+          "ambience": {
+            "source": "elevator_music.mp3",
+            "volume": 0.2,
+            "length": 120000
+          },
+          "actors": ["Cédric James"]
+        },
+        {
+          "name": "Tech Haven",
+          "description": "A high-end electronics store offering the latest in cyberware and gadgets.",
+          "art": "corporate_district/tech_haven.webp",
+          "music": {
+            "source": "corporate_district/tech_haven.mp3",
+            "volume": 0.5,
+            "length": 110000
+          },
+          "ambience": {
+            "source": "store_ambience.mp3",
+            "volume": 0.3,
+            "length": 80000
+          },
+          "actors": ["Cédric James"]
+        }
+      ]
+    },
+    {
+      "name": "Outskirts",
+      "description": "The less developed areas of the city, where the buildings are older and the streets are quieter.",
+      "art": "outskirts/outskirts.webp",
+      "music": {
+        "source": "outskirts/outskirts.mp3",
+        "volume": 0.4,
+        "length": 103000
+      },
+      "ambience": {
+        "source": "sandy_wind.mp3",
+        "volume": 0.5,
+        "length": 120000
+      },
+      "locations": [
+        {
+          "name": "Abandoned Storage Unit",
+          "description": "A small, empty shed that has seen better days, now a hideout for those who prefer the shadows.",
+          "art": "outskirts/abandoned_storage_unit.webp",
+          "music": {
+            "source": "outskirts/abandoned_storage_unit.mp3",
+            "volume": 0.5,
+            "length": 530000
+          },
+          "ambience": {
+            "source": "muffled_wind.mp3",
+            "volume": 0.3,
+            "length": 60000
+          },
+          "actors": ["Cédric James"]
+        },
+        {
+          "name": "Oasis Springs Tavern",
+          "description": "A rustic tavern known for its cheap drinks and laid-back atmosphere, frequented by wandering travelers and... unsavory folk.",
+          "art": "outskirts/tavern.webp",
+          "music": {
+            "source": "outskirts/tavern.mp3",
+            "volume": 0.4,
+            "length": 116000
+          },
+          "ambience": {
+            "source": "tavern.mp3",
+            "volume": 0.5,
+            "length": 259000
+          },
+          "actors": ["Cédric James"]
         }
       ]
     }

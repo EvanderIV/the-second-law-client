@@ -33,6 +33,11 @@ let onRoomClosed;
 
 let gameStarted = false;
 
+let areaLabelTimer = null;
+
+// --- State Tracking ---
+let currentBackgroundArt = null;
+
 // --- Audio Management ---
 // Variables to track the current audio paths to prevent re-playing the same tracks.
 let currentMusicPath = null;
@@ -176,15 +181,22 @@ function setupSocketEventHandlers() {
   }
 
   // This 'gameState' handler now supports overlapping audio loops for music and ambience.
-  socket.on("gameState", async (data) => {
+  socket.on("gameState", async (payload) => {
     try {
+      // The server sends a pre-parsed object, so we use it directly.
+      const data = payload;
+      if (!data) {
+        console.error("Received an empty gameState payload.", payload);
+        return;
+      }
+
       // Fade out menu music when the game starts
       if (!gameStarted && data.sector !== null) {
         gameStarted = true;
         document.body.style.backgroundColor = "#000"; // Set background color to black
         const settings = document.getElementById("settings-btn-desktop");
         if (settings) {
-          settings.style.opacity = 0.5;
+          settings.style.opacity = 0.1;
         }
         const roomCode = document.getElementById("room-code");
         if (roomCode) {
@@ -197,7 +209,7 @@ function setupSocketEventHandlers() {
       // Fetch world and actions configuration
       const worldResponse = await fetch("./js/world.json");
       const worldConfig = await worldResponse.json();
-      const actionsResponse = await fetch("./js/actions.json");
+      const actionsResponse = await fetch("./js/actors.json");
       const actionsConfig = await actionsResponse.json();
 
       const sectorName = data.sector || null;
@@ -220,15 +232,106 @@ function setupSocketEventHandlers() {
         artSource = sectorConfig.art;
       }
 
-      if (artSource) {
+      const fullArtPath = artSource ? `assets/art/game/${artSource}` : null;
+
+      if (fullArtPath && fullArtPath !== currentBackgroundArt) {
+        currentBackgroundArt = fullArtPath;
         let background = document.getElementById("background-art");
         background.classList.add("minimized");
         setTimeout(() => {
-          background.src = `assets/art/game/${artSource}`;
+          background.src = fullArtPath;
         }, 1500);
         setTimeout(() => {
           background.classList.remove("minimized");
         }, 1800);
+      }
+
+      // --- AREA LABEL MANAGEMENT ---
+      const areaLabel = document.getElementById("area-label");
+      if (areaLabel && data.location) {
+        if (areaLabel.innerHTML !== "<div></div>" + data.location) {
+          setTimeout(() => {
+            areaLabel.innerHTML = "<div></div>" + data.location;
+            areaLabel.classList.add("visible");
+          }, 1000);
+          if (areaLabelTimer) {
+            clearTimeout(areaLabelTimer);
+          }
+          areaLabelTimer = setTimeout(() => {
+            areaLabel.classList.remove("visible");
+          }, 10000);
+        }
+      } else if (areaLabel && !data.location && data.sector) {
+        // If no location but sector is present, show sector name
+        if (areaLabel.innerHTML !== "<div></div>" + data.sector) {
+          setTimeout(() => {
+            areaLabel.innerHTML = "<div></div>" + data.sector;
+            areaLabel.classList.add("visible");
+          }, 1000);
+          if (areaLabelTimer) {
+            clearTimeout(areaLabelTimer);
+          }
+          areaLabelTimer = setTimeout(() => {
+            areaLabel.classList.remove("visible");
+          }, 10000);
+        }
+      }
+
+      // --- ACTION AND ACTOR LOGIC ---
+      // Find the correct action from actions.json based on actor and action in gameState
+      let overrideAction = null;
+      const actorName = data.actor;
+      const actionTrigger = data.action;
+
+      if (actorName && actionTrigger && actionsConfig && actionsConfig.music) {
+        const actorActionObject = actionsConfig.music.find(
+          (action) => action[actorName]
+        );
+
+        if (actorActionObject) {
+          const actorActions = actorActionObject[actorName];
+          if (actorActions) {
+            overrideAction = actorActions.find(
+              (action) =>
+                action.trigger.toLowerCase() === actionTrigger.toLowerCase()
+            );
+          }
+        }
+      }
+
+      // --- ACTOR DISPLAY MANAGEMENT ---
+      const actorDisplay = document.getElementById("actor-display");
+      const actorArt = document.getElementById("actor-art");
+      const actorNameEl = document.getElementById("actor-name");
+
+      if (actorName && overrideAction && overrideAction.art) {
+        const actorArtPath = `assets/art/game/actors/${overrideAction.art}`;
+        actorArt.src = actorArtPath;
+
+        // Find display name from world.json
+        let displayName = actorName; // Default to key name
+        if (locationConfig && locationConfig.actors) {
+          const foundActor = locationConfig.actors.find(
+            (name) =>
+              name.toLowerCase().replace(/\s+/g, "") ===
+              actorName.toLowerCase().replace(/\s+/g, "")
+          );
+          if (foundActor) displayName = foundActor;
+        }
+
+        actorNameEl.innerHTML =
+          displayName +
+          " <repeat>" +
+          actorName +
+          "</repeat> <repeat>" +
+          actorName +
+          "</repeat> <repeat>" +
+          actorName +
+          "</repeat>";
+        actorDisplay.classList.add("visible");
+      } else {
+        // Hide if no actor, or if actor/action combo has no art
+        actorDisplay.classList.remove("visible");
       }
 
       // --- AUDIO CONFIGURATION ---
@@ -237,41 +340,26 @@ function setupSocketEventHandlers() {
 
       // 1. Get default audio from world.json
       if (locationConfig) {
-        // If a location is defined, ONLY use its audio. If a property is undefined, that means silence.
         musicConfig = locationConfig.music;
         ambienceConfig = locationConfig.ambience;
       } else if (sectorConfig) {
-        // If no location, fall back to the sector's audio.
         musicConfig = sectorConfig.music;
         ambienceConfig = sectorConfig.ambience;
       }
 
-      // 2. Check for actor-specific overrides from actions.json
-      if (data.actor && actionsConfig.music) {
-        const actorName = data.actor;
-        // The 'music' property in actions.json is an array of objects where the key is the actor name.
-        const actorActionObject = actionsConfig.music.find(
-          (action) => action[actorName]
-        );
-
-        if (actorActionObject) {
-          // We found the actor. Now get their list of actions.
-          const actorActions = actorActionObject[actorName];
-          if (actorActions && actorActions.length > 0) {
-            // For now, let's assume we use the first action defined.
-            // A more complex system could use the 'trigger' property.
-            const overrideAction = actorActions[0];
-
-            // If the action specifies music or ambience, it overrides the world default.
-            if (overrideAction.music) {
-              console.log(`Overriding music for actor: ${actorName}`);
-              musicConfig = overrideAction.music;
-            }
-            if (overrideAction.ambience) {
-              console.log(`Overriding ambience for actor: ${actorName}`);
-              ambienceConfig = overrideAction.ambience;
-            }
-          }
+      // 2. Check for action-specific overrides from the found action
+      if (overrideAction) {
+        if (overrideAction.music) {
+          console.log(
+            `Overriding music for actor: ${actorName}, action: ${actionTrigger}`
+          );
+          musicConfig = overrideAction.music;
+        }
+        if (overrideAction.ambience) {
+          console.log(
+            `Overriding ambience for actor: ${actorName}, action: ${actionTrigger}`
+          );
+          ambienceConfig = overrideAction.ambience;
         }
       }
 
@@ -373,7 +461,7 @@ function setupSocketEventHandlers() {
       handleAudio("music", musicConfig, musicVolume, false);
       handleAudio("ambience", ambienceConfig, ambienceVolume, true);
     } catch (error) {
-      console.error("Error handling gameState audio:", error);
+      console.error("Error handling gameState:", error);
     }
   });
 }
@@ -461,8 +549,6 @@ function performJoin(roomCode, playerName, skinId) {
     // Hide join UI elements
     document.getElementById("game-code").style.display = "none";
     document.getElementById("join-button").style.display = "none";
-    document.getElementById("ready-button").style.display = "inline-flex";
-    document.getElementById("ready-text").style.display = "flex";
     const suitSquares = document.getElementById("suit-squares");
     const root = document.getElementById("root");
     if (suitSquares) {
@@ -481,8 +567,6 @@ function performJoin(roomCode, playerName, skinId) {
     // Re-enable join UI
     document.getElementById("game-code").style.display = "";
     document.getElementById("join-button").style.display = "";
-    document.getElementById("ready-button").style.display = "none";
-    document.getElementById("ready-text").style.display = "none";
   });
 }
 
