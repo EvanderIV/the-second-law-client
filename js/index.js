@@ -350,7 +350,7 @@ if (document.cookie.includes("skin")) {
   if (boatLr) boatLr.src = "./assets/boats/" + skin + "/lr.png";
 }
 
-let darkMode = !isMobileUser;
+let darkMode = true;
 if (cookies.darkMode === "1") {
   darkMode = true; // Set global darkMode state
   let darkableElems = document.getElementsByClassName("darkable");
@@ -432,7 +432,7 @@ if (!isMobileUser) {
         roomCodeDisplay.innerHTML = `Room Code: ${code}`;
         // Add QR code if not on mobile
         if (!isMobileUser) {
-          const qrUrl = `https://eminich.com/games/the-second-law-client?code=${code}`;
+          const qrUrl = `eminich.com/games/the-second-law-client?code=${code}`;
           const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
             qrUrl
           )}`;

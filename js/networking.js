@@ -204,6 +204,10 @@ function setupSocketEventHandlers() {
           roomCode.innerText = roomCode.innerText.split(": ")[1];
         }
         stopMenuMusic(true); // This smoothly fades out the menu music
+        let settingsDiv = document.getElementById("settings-div");
+        let settingsBtn = document.getElementById("settings-button");
+        settingsDiv.style.display = "none";
+        settingsBtn.style.display = "none";
       }
 
       // Fetch world and actions configuration
@@ -318,15 +322,26 @@ function setupSocketEventHandlers() {
           );
           if (foundActor) displayName = foundActor;
         }
+        if (
+          displayName === "Cain Harrow" &&
+          (actionTrigger.toLowerCase().startsWith("silohuette") ||
+            actionTrigger.toLowerCase().startsWith("chase"))
+        ) {
+          displayName = "????";
+        }
 
         actorNameEl.innerHTML =
           displayName +
           " <repeat>" +
-          actorName +
+          displayName +
           "</repeat> <repeat>" +
-          actorName +
+          displayName +
           "</repeat> <repeat>" +
-          actorName +
+          displayName +
+          "</repeat> <repeat>" +
+          displayName +
+          "</repeat> <repeat>" +
+          displayName +
           "</repeat>";
         actorDisplay.classList.add("visible");
       } else {

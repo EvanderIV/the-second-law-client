@@ -171,6 +171,124 @@
             "length": 310800
           }
         }
+      ],
+      "Cain Harrow": [
+        {
+          "trigger": "silohuette",
+          "art": "antag/antag_silohuette.png",
+          "music": {
+            "source": "actors/antag_silohuette.mp3",
+            "volume": 0.5,
+            "length": 80000
+          }
+        },
+        {
+          "trigger": "chase",
+          "art": "antag/antag_chase.png",
+          "music": {
+            "source": "actors/antag_chase.mp3",
+            "volume": 0.5,
+            "length": 120000
+          }
+        },
+        {
+          "trigger": "interact 0",
+          "art": "antag/antag.png",
+          "music": {
+            "source": "actors/antag_theme0.mp3",
+            "volume": 0.5,
+            "length": 90000
+          }
+        },
+        {
+          "trigger": "interact 1",
+          "art": "antag/antag.png",
+          "music": {
+            "source": "actors/antag_theme1.mp3",
+            "volume": 0.5,
+            "length": 121500
+          }
+        },
+        {
+          "trigger": "angry",
+          "art": "antag/antag_angry.png",
+          "music": {
+            "source": "actors/antag_theme0.mp3",
+            "volume": 0.5,
+            "length": 90000
+          }
+        },
+        {
+          "trigger": "battle 0",
+          "art": "antag/cain_battle0.png",
+          "music": {
+            "source": "actors/antag_battle0.mp3",
+            "volume": 0.6,
+            "length": 281000
+          }
+        },
+        {
+          "trigger": "battle 1",
+          "art": "antag/antag_battle1.png",
+          "music": {
+            "source": "actors/antag_battle1.mp3",
+            "volume": 0.7,
+            "length": 245000
+          }
+        },
+        {
+          "trigger": "battle 2",
+          "art": "antag/antag_battle2.png",
+          "music": {
+            "source": "actors/antag_battle2.mp3",
+            "volume": 0.7,
+            "length": 239000
+          }
+        },
+        {
+          "trigger": "battle 3",
+          "art": "antag/antag_battle3.png",
+          "music": {
+            "source": "actors/antag_battle3.mp3",
+            "volume": 0.7,
+            "length": 239000
+          }
+        }
+      ],
+      "Police Squad": [
+        {
+          "trigger": "interact",
+          "art": "policesquad/policesquad.png",
+          "music": {
+            "source": "actors/policesquad_theme0.mp3",
+            "volume": 0.4,
+            "length": 76000
+          }
+        },
+        {
+          "trigger": "battle",
+          "art": "policesquad/policesquad.png",
+          "music": {
+            "source": "actors/policesquad_battle.mp3",
+            "volume": 0.3,
+            "length": 251000
+          }
+        }
+      ],
+      "Cashier": [
+        {
+          "trigger": "interact",
+          "art": "fastfoodcashier/fastfoodcashier.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "cashier/fastfoodcashier_battle.png",
+          "music": {
+            "source": "actors/fastfoodcashier_battle.mp3",
+            "volume": 0.4,
+            "length": 120000
+          }
+        }
       ]
     }
   ]

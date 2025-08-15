@@ -19,7 +19,7 @@
       "name": "Gunfire",
       "art": "gunfire.jpg",
       "sound": "sustained_gunfire.mp3",
-      "soundVolume": 1.3,
+      "soundVolume": 1.5,
       "soundDelay": 0.0,
       "remoteSound": "whizzing_bullets.mp3",
       "remoteSoundVolume": 1.0,
@@ -38,7 +38,9 @@
       "art": "gunshot.jpg",
       "sound": "gunshot.mp3",
       "soundVolume": 1.0,
-      "soundDelay": 0.0
+      "soundDelay": 0.0,
+      "vibrationPattern": [100],
+      "vibrationDelay": 0.0
     },
     {
       "name": "Light Explosion",
@@ -57,7 +59,7 @@
       "soundDelay": 0.0,
       "remoteSound": "rubble_trickling.mp3",
       "remoteSoundVolume": 0.5,
-      "remoteSoundDelay": 1.7,
+      "remoteSoundDelay": 0.9,
       "vibrationPattern": [
         600, 30, 300, 80, 200, 100, 150, 30, 70, 30, 10, 5, 30, 5, 20, 5, 10, 5
       ],

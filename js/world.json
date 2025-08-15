@@ -50,7 +50,7 @@
             "volume": 0.5,
             "length": 498500
           },
-          "actors": ["Cédric James"]
+          "actors": ["Cédric James", "Police Squad"]
         },
         {
           "name": "MacDougall's",
@@ -83,6 +83,22 @@
             "length": 198000
           },
           "actors": ["Cédric James"]
+        },
+        {
+          "name": "Central Library",
+          "description": "A quiet place filled with books and digital archives, perfect for research or a moment of peace.",
+          "art": "inner_city/library.webp",
+          "music": {
+            "source": "inner_city/library.mp3",
+            "volume": 0.3,
+            "length": 41500
+          },
+          "ambience": {
+            "source": "electric_hum.mp3",
+            "volume": 0.05,
+            "length": 9500
+          },
+          "actors": ["Cédric James"]
         }
       ]
     },
@@ -93,29 +109,24 @@
       "music": {
         "source": "corporate_district/corporate_district.mp3",
         "volume": 0.4,
-        "length": 120000
+        "length": 60000
       },
       "ambience": {
         "source": "street_noises.mp3",
         "volume": 0.075,
-        "length": 90000
+        "length": 92000
       },
       "locations": [
         {
-          "name": "Corporate Tower",
+          "name": "Senator's Office",
           "description": "A towering structure housing the offices of the city's most powerful corporations.",
-          "art": "corporate_district/corporate_tower.webp",
+          "art": "corporate_district/senators_office.webp",
           "music": {
-            "source": "corporate_district/corporate_tower.mp3",
+            "source": "corporate_district/senators_office.mp3",
             "volume": 0.4,
-            "length": 150000
+            "length": 65000
           },
-          "ambience": {
-            "source": "elevator_music.mp3",
-            "volume": 0.2,
-            "length": 120000
-          },
-          "actors": ["Cédric James"]
+          "actors": ["Jack Nickle", "Cédric James", "Police Squad"]
         },
         {
           "name": "Tech Haven",
@@ -164,7 +175,7 @@
             "volume": 0.3,
             "length": 60000
           },
-          "actors": ["Cédric James"]
+          "actors": ["Cédric James", "Cain Harrow", "Police Squad"]
         },
         {
           "name": "Oasis Springs Tavern",
