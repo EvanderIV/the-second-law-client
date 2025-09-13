@@ -78,7 +78,7 @@
           "ambience": {
             "source": "",
             "volume": 0.1,
-            "length": 130000
+            "length": 120000
           }
         },
         {
@@ -201,6 +201,15 @@
           }
         },
         {
+          "trigger": "angry 0",
+          "art": "antag/antag_angry.png",
+          "music": {
+            "source": "actors/antag_theme0.mp3",
+            "volume": 0.5,
+            "length": 90000
+          }
+        },
+        {
           "trigger": "interact 1",
           "art": "antag/antag.png",
           "music": {
@@ -210,10 +219,10 @@
           }
         },
         {
-          "trigger": "angry",
+          "trigger": "angry 1",
           "art": "antag/antag_angry.png",
           "music": {
-            "source": "actors/antag_theme0.mp3",
+            "source": "actors/antag_theme1.mp3",
             "volume": 0.5,
             "length": 90000
           }
@@ -282,11 +291,46 @@
         },
         {
           "trigger": "battle",
-          "art": "cashier/fastfoodcashier_battle.png",
+          "art": "fastfoodcashier/fastfoodcashier_battle.png",
           "music": {
             "source": "actors/fastfoodcashier_battle.mp3",
             "volume": 0.4,
             "length": 120000
+          },
+          "ambience": {
+            "source": "",
+            "volume": 0.1,
+            "length": 236500
+          }
+        }
+      ],
+      "Hospital Nurse": [
+        {
+          "trigger": "interact",
+          "art": "nurse/nurse.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "nurse/nurse.png",
+          "music": {
+            "source": "actors/generic_battle.mp3",
+            "volume": 0.4,
+            "length": 205700
+          }
+        }
+      ],
+      "Surgeon": [
+        {
+          "trigger": "interact",
+          "art": "surgeon/surgeon.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "surgeon/surgeon_battle.png",
+          "music": {
+            "source": "actors/generic_battle.mp3",
+            "volume": 0.4,
+            "length": 205700
           }
         }
       ]

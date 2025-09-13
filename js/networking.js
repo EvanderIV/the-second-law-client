@@ -1,4 +1,4 @@
-import { playEvent } from "./events.js";
+import { playEvent, getActiveOverride } from "./events.js";
 import { startMenuMusic, stopMenuMusic } from "./events.js";
 import { musicVolume, ambienceVolume } from "./index.js";
 
@@ -31,6 +31,14 @@ let onPlayerInfoUpdate;
 let onGameStarting;
 let onRoomClosed;
 
+// Expose audio handler for events
+window.handleEventAudio = (type, config, useFadeIn = true) => {
+  if (isMobileUser) return;
+  // Event audio overrides should not be affected by user volume sliders.
+  handleAudio(type, config, 1.0, useFadeIn);
+  console.log(`Event audio triggered: ${type}`, config);
+};
+
 let gameStarted = false;
 
 let areaLabelTimer = null;
@@ -45,6 +53,156 @@ let currentAmbiencePath = null;
 // Arrays to manage all currently playing audio instances for each category.
 window.currentMusicLoopGroup = [];
 window.currentAmbienceLoopGroup = [];
+
+// Helper function to fade out and stop an audio element.
+function fadeOutAudio(audio) {
+  if (!audio || audio.paused) return;
+
+  const FADE_DURATION = 3000; // 3 seconds
+  const FADE_STEPS = 60;
+  const stepDuration = FADE_DURATION / FADE_STEPS;
+  const initialVolume = audio.volume;
+  const volumeStep = initialVolume > 0 ? initialVolume / FADE_STEPS : 0;
+
+  if (volumeStep === 0) {
+    audio.pause();
+    return;
+  }
+
+  let fadeInterval = setInterval(() => {
+    const newVolume = audio.volume - volumeStep;
+    if (newVolume <= 0) {
+      audio.volume = 0;
+      audio.pause();
+      audio.src = "";
+      clearInterval(fadeInterval);
+    } else {
+      audio.volume = newVolume;
+    }
+  }, stepDuration);
+}
+
+// Helper function to fade in an audio element that is ALREADY PLAYING.
+function fadeInAudio(audio, targetVolume, duration) {
+  if (targetVolume <= 0) return;
+
+  const FADE_STEPS = 60;
+  const stepDuration = duration / FADE_STEPS;
+  const volumeStep = targetVolume / FADE_STEPS;
+
+  if (volumeStep <= 0) return;
+
+  let fadeInterval = setInterval(() => {
+    const newVolume = audio.volume + volumeStep;
+    if (newVolume >= targetVolume) {
+      audio.volume = targetVolume;
+      clearInterval(fadeInterval);
+    } else {
+      audio.volume = newVolume;
+    }
+  }, stepDuration);
+}
+
+// Generic audio handler function
+function handleAudio(type, config, volumeSetting, useFadeIn) {
+  if (isMobileUser) return;
+  let currentPath, loopGroup;
+
+  if (type === "music") {
+    currentPath = currentMusicPath;
+    loopGroup = window.currentMusicLoopGroup;
+  } else {
+    currentPath = currentAmbiencePath;
+    loopGroup = window.currentAmbienceLoopGroup;
+  }
+
+  // If config is null, it's a signal to stop audio.
+  // Otherwise, construct the path.
+  const newAudioPath = config?.source
+    ? config.source.startsWith("assets/")
+      ? config.source // Use full path if provided (for event overrides)
+      : `assets/audio/${type}/game/${config.source}` // Add prefix for game audio
+    : null;
+
+  if (newAudioPath === currentPath) {
+    return; // Audio hasn't changed, do nothing.
+  }
+
+  // Fade out all old instances of this audio type
+  loopGroup.forEach((audio) => fadeOutAudio(audio));
+
+  if (type === "music") {
+    window.currentMusicLoopGroup = [];
+    currentMusicPath = newAudioPath;
+  } else {
+    window.currentAmbienceLoopGroup = [];
+    currentAmbiencePath = newAudioPath;
+  }
+
+  if (newAudioPath) {
+    const baseVolume = config.volume || 1.0;
+    const safeVolumeSetting =
+      typeof volumeSetting === "number" && !isNaN(volumeSetting)
+        ? volumeSetting
+        : 1.0;
+    const targetVolume = baseVolume * safeVolumeSetting;
+
+    const playNewInstance = () => {
+      let checkPath = type === "music" ? currentMusicPath : currentAmbiencePath;
+      if (checkPath !== newAudioPath) return; // Stale call, audio has changed again
+
+      const audio = new Audio(newAudioPath);
+      audio.dataset.baseVolume = baseVolume;
+
+      const currentGroup =
+        type === "music"
+          ? window.currentMusicLoopGroup
+          : window.currentAmbienceLoopGroup;
+      currentGroup.push(audio);
+
+      audio.addEventListener("ended", () => {
+        const index = currentGroup.indexOf(audio);
+        if (index > -1) currentGroup.splice(index, 1);
+      });
+
+      // --- REVISED LOOPING LOGIC ---
+      const loopPoint = config.length;
+
+      // Only loop if config.loop is not explicitly false.
+      if (config.loop !== false) {
+        if (loopPoint) {
+          // Custom loop point logic (cross-fade)
+          let loopTriggered = false;
+          audio.addEventListener("timeupdate", function () {
+            if (!loopTriggered && this.currentTime >= loopPoint / 1000) {
+              loopTriggered = true;
+              playNewInstance();
+            }
+          });
+        } else {
+          // Standard HTML5 audio loop
+          audio.loop = true;
+        }
+      }
+      // If config.loop is false, we do nothing, and the audio will play once.
+
+      audio.volume = useFadeIn ? 0 : targetVolume;
+      const playPromise = audio.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            if (useFadeIn) {
+              fadeInAudio(audio, targetVolume, 1000);
+            }
+          })
+          .catch((e) => console.error(`Audio play failed for ${type}:`, e));
+      }
+    };
+    playNewInstance();
+  }
+}
+window.handleAudio = handleAudio;
 
 export { gameStarted };
 
@@ -129,61 +287,9 @@ function setupSocketEventHandlers() {
     }
   });
 
-  // Helper function to fade out and stop an audio element.
-  function fadeOutAudio(audio) {
-    if (!audio || audio.paused) return;
-
-    const FADE_DURATION = 3000; // 3 seconds
-    const FADE_STEPS = 60;
-    const stepDuration = FADE_DURATION / FADE_STEPS;
-    const initialVolume = audio.volume;
-    // Prevent division by zero if initialVolume is 0
-    const volumeStep = initialVolume > 0 ? initialVolume / FADE_STEPS : 0;
-
-    if (volumeStep === 0) {
-      audio.pause();
-      return;
-    }
-
-    let fadeInterval = setInterval(() => {
-      const newVolume = audio.volume - volumeStep;
-      if (newVolume <= 0) {
-        audio.volume = 0;
-        audio.pause();
-        // Clean up the element after it's fully faded and stopped
-        audio.src = "";
-        clearInterval(fadeInterval);
-      } else {
-        audio.volume = newVolume;
-      }
-    }, stepDuration);
-  }
-
-  // Helper function to fade in an audio element that is ALREADY PLAYING.
-  function fadeInAudio(audio, targetVolume, duration) {
-    if (targetVolume <= 0) return; // No need to fade if target is 0 or less.
-
-    const FADE_STEPS = 60;
-    const stepDuration = duration / FADE_STEPS;
-    const volumeStep = targetVolume / FADE_STEPS;
-
-    if (volumeStep <= 0) return;
-
-    let fadeInterval = setInterval(() => {
-      const newVolume = audio.volume + volumeStep;
-      if (newVolume >= targetVolume) {
-        audio.volume = targetVolume;
-        clearInterval(fadeInterval);
-      } else {
-        audio.volume = newVolume;
-      }
-    }, stepDuration);
-  }
-
-  // This 'gameState' handler now supports overlapping audio loops for music and ambience.
+  // This 'gameState' handler now supports overlapping audio loops and persistent event overrides.
   socket.on("gameState", async (payload) => {
     try {
-      // The server sends a pre-parsed object, so we use it directly.
       const data = payload;
       if (!data) {
         console.error("Received an empty gameState payload.", payload);
@@ -215,6 +321,12 @@ function setupSocketEventHandlers() {
       const worldConfig = await worldResponse.json();
       const actionsResponse = await fetch("./js/actors.json");
       const actionsConfig = await actionsResponse.json();
+
+      // Store world configuration globally so it can be accessed by events system
+      window.currentWorld = {
+        music: null,
+        ambience: null,
+      };
 
       const sectorName = data.sector || null;
       const locationName = data.location || null;
@@ -282,7 +394,6 @@ function setupSocketEventHandlers() {
       }
 
       // --- ACTION AND ACTOR LOGIC ---
-      // Find the correct action from actions.json based on actor and action in gameState
       let overrideAction = null;
       const actorName = data.actor;
       const actionTrigger = data.action;
@@ -312,8 +423,7 @@ function setupSocketEventHandlers() {
         const actorArtPath = `assets/art/game/actors/${overrideAction.art}`;
         actorArt.src = actorArtPath;
 
-        // Find display name from world.json
-        let displayName = actorName; // Default to key name
+        let displayName = actorName;
         if (locationConfig && locationConfig.actors) {
           const foundActor = locationConfig.actors.find(
             (name) =>
@@ -345,15 +455,16 @@ function setupSocketEventHandlers() {
           "</repeat>";
         actorDisplay.classList.add("visible");
       } else {
-        // Hide if no actor, or if actor/action combo has no art
         actorDisplay.classList.remove("visible");
       }
 
-      // --- AUDIO CONFIGURATION ---
+      // --- AUDIO CONFIGURATION (REVISED HIERARCHY) ---
       let musicConfig;
       let ambienceConfig;
+      let isMusicOverridden = false;
+      let isAmbienceOverridden = false;
 
-      // 1. Get default audio from world.json
+      // 1. Determine the base world audio config (sector/location)
       if (locationConfig) {
         musicConfig = locationConfig.music;
         ambienceConfig = locationConfig.ambience;
@@ -362,7 +473,7 @@ function setupSocketEventHandlers() {
         ambienceConfig = sectorConfig.ambience;
       }
 
-      // 2. Check for action-specific overrides from the found action
+      // 2. Check for actor-specific overrides, which take precedence over location.
       if (overrideAction) {
         if (overrideAction.music) {
           console.log(
@@ -378,103 +489,54 @@ function setupSocketEventHandlers() {
         }
       }
 
-      // --- GENERIC AUDIO HANDLER ---
-      const handleAudio = (type, config, volumeSetting, useFadeIn) => {
-        if (isMobileUser) return;
-        let currentPath, loopGroup;
-        if (type === "music") {
-          currentPath = currentMusicPath;
-          loopGroup = window.currentMusicLoopGroup;
-        } else {
-          currentPath = currentAmbiencePath;
-          loopGroup = window.currentAmbienceLoopGroup;
-        }
+      // 3. Store this definitive state as the "currentWorld" for refreshes.
+      if (musicConfig) {
+        window.currentWorld.music = {
+          ...musicConfig,
+          source: `assets/audio/music/game/${musicConfig.source}`,
+        };
+      } else {
+        window.currentWorld.music = null;
+      }
 
-        const newAudioPath = config?.source
-          ? `assets/audio/${type}/game/${config.source}`
-          : null;
+      if (ambienceConfig) {
+        window.currentWorld.ambience = {
+          ...ambienceConfig,
+          source: `assets/audio/ambience/game/${ambienceConfig.source}`,
+        };
+      } else {
+        window.currentWorld.ambience = null;
+      }
 
-        if (newAudioPath === currentPath) {
-          return; // Audio hasn't changed, do nothing.
-        }
+      // 4. Now, check for temporary event overrides which take highest priority for playback.
+      const musicOverride = getActiveOverride("music");
+      if (musicOverride) {
+        musicConfig = musicOverride.config;
+        isMusicOverridden = true;
+        console.log("Using persistent music override:", musicConfig);
+      }
 
-        // Fade out all old instances of this audio type
-        loopGroup.forEach((audio) => fadeOutAudio(audio));
-
-        if (type === "music") {
-          window.currentMusicLoopGroup = [];
-          currentMusicPath = newAudioPath;
-        } else {
-          window.currentAmbienceLoopGroup = [];
-          currentAmbiencePath = newAudioPath;
-        }
-
-        if (newAudioPath) {
-          const baseVolume = config.volume || 1.0;
-          const loopPoint = config.length; // in milliseconds
-          const safeVolumeSetting =
-            typeof volumeSetting === "number" && !isNaN(volumeSetting)
-              ? volumeSetting
-              : 1.0;
-          const targetVolume = baseVolume * safeVolumeSetting;
-
-          const playNewInstance = () => {
-            let checkPath =
-              type === "music" ? currentMusicPath : currentAmbiencePath;
-            if (checkPath !== newAudioPath) return; // Stale call, audio has changed again
-
-            const audio = new Audio(newAudioPath);
-            // Store the base volume on the element itself so sliders can access it
-            audio.dataset.baseVolume = baseVolume;
-
-            const currentGroup =
-              type === "music"
-                ? window.currentMusicLoopGroup
-                : window.currentAmbienceLoopGroup;
-            currentGroup.push(audio);
-
-            audio.addEventListener("ended", () => {
-              const index = currentGroup.indexOf(audio);
-              if (index > -1) currentGroup.splice(index, 1);
-            });
-
-            if (loopPoint) {
-              let loopTriggered = false;
-              audio.addEventListener("timeupdate", function () {
-                if (!loopTriggered && this.currentTime >= loopPoint / 1000) {
-                  loopTriggered = true;
-                  playNewInstance();
-                }
-              });
-            } else {
-              audio.loop = true;
-            }
-
-            // **FIX:** Set initial volume, call play(), THEN fade if needed.
-            // This is a more robust pattern for browsers.
-            audio.volume = useFadeIn ? 0 : targetVolume;
-            const playPromise = audio.play();
-
-            if (playPromise !== undefined) {
-              playPromise
-                .then(() => {
-                  // Playback started. If fade-in is required, do it now.
-                  if (useFadeIn) {
-                    fadeInAudio(audio, targetVolume, 1000);
-                  }
-                })
-                .catch((e) =>
-                  console.error(`Audio play failed for ${type}:`, e)
-                );
-            }
-          };
-          playNewInstance();
-        }
-      };
+      const ambienceOverride = getActiveOverride("ambience");
+      if (ambienceOverride) {
+        ambienceConfig = ambienceOverride.config;
+        isAmbienceOverridden = true;
+        console.log("Using persistent ambience override:", ambienceConfig);
+      }
 
       // --- TRIGGER AUDIO FOR MUSIC AND AMBIENCE ---
-      handleAudio("music", musicConfig, musicVolume, false);
-      handleAudio("ambience", ambienceConfig, ambienceVolume, true);
+      // If it's a persistent event override, it shouldn't be affected by user volume sliders.
+      handleAudio(
+        "music",
+        musicConfig,
+        isMusicOverridden ? 1.0 : musicVolume,
+        false
+      );
+      handleAudio(
+        "ambience",
+        ambienceConfig,
+        isAmbienceOverridden ? 1.0 : ambienceVolume,
+        true
+      );
     } catch (error) {
       console.error("Error handling gameState:", error);
     }
@@ -501,16 +563,13 @@ function connectToServer() {
     console.log("Connected to server");
     lastPongReceived = Date.now();
 
-    // Clear any existing ping interval
     if (pingInterval) {
       clearInterval(pingInterval);
     }
 
-    // Start ping interval
     pingInterval = setInterval(() => {
       if (socket.connected) {
         socket.emit("ping");
-        // Check if we haven't received a pong in 60 seconds
         if (Date.now() - lastPongReceived > 60000) {
           console.log("Connection lost, attempting to reconnect...");
           clearInterval(pingInterval);
@@ -520,7 +579,6 @@ function connectToServer() {
       }
     }, 25000);
 
-    // Set up event handlers after connection
     setupSocketEventHandlers();
   });
 }
@@ -529,7 +587,6 @@ function joinRoom(roomCode, playerName, skinId) {
   if (!socket || !socket.connected) {
     connectToServer();
 
-    // Wait for connection before joining
     socket.once("connect", () => {
       performJoin(roomCode, playerName, skinId);
     });
@@ -542,7 +599,6 @@ function performJoin(roomCode, playerName, skinId) {
   console.log("Attempting to join room:", roomCode);
   showError("Joining room...");
 
-  // Setup updatePlayerInfo handler first
   socket.on("updatePlayerInfo", (data) => {
     console.log("Sending player info update:", data);
   });
@@ -554,14 +610,12 @@ function performJoin(roomCode, playerName, skinId) {
     clientId: socket.id,
   });
 
-  // Set up handlers for room join process
   socket.once("joinSuccess", (data) => {
     startMenuMusic();
     console.log("Successfully joined room:", data);
     document.getElementById("error-message").style.marginTop = "90vmin";
     document.getElementById("error-message").style.color = "#AAFFAA";
     showError("Successfully joined room!");
-    // Hide join UI elements
     document.getElementById("game-code").style.display = "none";
     document.getElementById("join-button").style.display = "none";
     const suitSquares = document.getElementById("suit-squares");
@@ -579,7 +633,6 @@ function performJoin(roomCode, playerName, skinId) {
     document.getElementById("error-message").style.marginTop = "50vmin";
     document.getElementById("error-message").style.color = "#FF0000";
     showError(error.message || "Failed to join room");
-    // Re-enable join UI
     document.getElementById("game-code").style.display = "";
     document.getElementById("join-button").style.display = "";
   });
@@ -643,15 +696,12 @@ window.networkManager = {
     }
   },
   setCallbacks: (callbacks) => {
-    // Set all callbacks
     onPlayerJoined = callbacks.onPlayerJoined;
     onPlayerLeft = callbacks.onPlayerLeft;
     onReadyStateUpdate = callbacks.onReadyStateUpdate;
     onPlayerInfoUpdate = callbacks.onPlayerInfoUpdate;
     onGameStarting = callbacks.onGameStarting;
     onRoomClosed = callbacks.onRoomClosed;
-
-    // After setting callbacks, re-setup event handlers to ensure they're using the new callbacks
     setupSocketEventHandlers();
   },
 };

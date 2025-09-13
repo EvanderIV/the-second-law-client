@@ -1,6 +1,16 @@
 {
   "events": [
     {
+      "name": "Reset Music Override",
+      "art": "cancel_music_override.jpg",
+      "cancelOverrideMusic": true
+    },
+    {
+      "name": "Reset Ambience Override",
+      "art": "cancel_ambience_override.jpg",
+      "cancelOverrideAmbience": true
+    },
+    {
       "name": "Missile Strike",
       "art": "screeching_missile.jpg",
       "sound": "screeching_missile.mp3",
@@ -88,6 +98,48 @@
       "soundDelay": 0.0,
       "vibrationPattern": 200,
       "vibrationDelay": 0.0
+    },
+    {
+      "name": "Victory - Let There Be Light",
+      "art": "outer_wilds_ventures.jpg",
+      "soundVolume": 1.0,
+      "soundDelay": 0.0,
+      "overrideMusic": "victory_let_there_be_light.mp3",
+      "overrideMusicDuration": 26000,
+      "overrideMusicVolume": 0.2,
+      "overrideAmbience": "none",
+      "overrideAmbienceDuration": 26000,
+      "overrideAmbienceVolume": 0.3
+    },
+    {
+      "name": "Victory - Helldivers 2",
+      "art": "helldivers2.jpg",
+      "soundVolume": 1.0,
+      "soundDelay": 0.0,
+      "overrideMusic": "hd2_win_extract.mp3",
+      "overrideMusicDuration": 47000,
+      "overrideMusicVolume": 0.2,
+      "overrideAmbience": "none",
+      "overrideAmbienceDuration": 47000,
+      "overrideAmbienceVolume": 0.4
+    },
+    {
+      "name": "End Times I",
+      "art": "end_times.jpg",
+      "soundVolume": 1.0,
+      "soundDelay": 0.0,
+      "overrideMusic": "end_times.mp3",
+      "overrideMusicDuration": 3600000,
+      "overrideMusicVolume": 0.2
+    },
+    {
+      "name": "End Times II",
+      "art": "end_times_beat.jpg",
+      "soundVolume": 1.0,
+      "soundDelay": 0.0,
+      "overrideMusic": "end_times_beat.mp3",
+      "overrideMusicDuration": 3600000,
+      "overrideMusicVolume": 0.2
     }
   ]
 }

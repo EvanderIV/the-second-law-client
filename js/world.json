@@ -34,7 +34,7 @@
             "volume": 0.6,
             "length": 181000
           },
-          "actors": ["Cédric James"]
+          "actors": ["Hospital Nurse", "Surgeon", "Cédric James"]
         },
         {
           "name": "Central Plaza",
@@ -66,7 +66,7 @@
             "volume": 0.1,
             "length": 14300
           },
-          "actors": ["Cédric James"]
+          "actors": ["Cashier", "Cédric James"]
         },
         {
           "name": "Pablo's Tacos Y Tequila",
@@ -91,7 +91,7 @@
           "music": {
             "source": "inner_city/library.mp3",
             "volume": 0.3,
-            "length": 41500
+            "length": 41800
           },
           "ambience": {
             "source": "electric_hum.mp3",
@@ -99,6 +99,27 @@
             "length": 9500
           },
           "actors": ["Cédric James"]
+        },
+        {
+          "name": "Central Police Station",
+          "description": "The main hub for law enforcement in the city, a place where justice is served.",
+          "art": "inner_city/police_station.webp",
+          "music": {
+            "source": "inner_city/police_station.mp3",
+            "volume": 0.4,
+            "length": 263000
+          },
+          "ambience": {
+            "source": "police_comms.mp3",
+            "volume": 0.025,
+            "length": 229800
+          },
+          "actors": [
+            "Saburo Amon",
+            "Cain Harrow",
+            "Police Squad",
+            "Cédric James"
+          ]
         }
       ]
     },
@@ -126,7 +147,12 @@
             "volume": 0.4,
             "length": 65000
           },
-          "actors": ["Jack Nickle", "Cédric James", "Police Squad"]
+          "actors": [
+            "Jack Nickle",
+            "Cain Harrow",
+            "Cédric James",
+            "Police Squad"
+          ]
         },
         {
           "name": "Tech Haven",
@@ -192,6 +218,22 @@
             "length": 259000
           },
           "actors": ["Cédric James"]
+        },
+        {
+          "name": "Junkyard",
+          "description": "A large scrapyard filled with discarded vehicles and machinery, a treasure trove for scavengers.",
+          "art": "outskirts/junkyard.webp",
+          "music": {
+            "source": "outskirts/junkyard.mp3",
+            "volume": 0.5,
+            "length": 74000
+          },
+          "ambience": {
+            "source": "sandy_wind.mp3",
+            "volume": 0.2,
+            "length": 120000
+          },
+          "actors": ["Cédric James", "Cain Harrow", "Police Squad"]
         }
       ]
     }

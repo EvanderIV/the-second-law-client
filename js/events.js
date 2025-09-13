@@ -1,6 +1,34 @@
 import { gameStarted } from "./networking.js";
 import { playOneShot } from "./index.js"; // Import the corrected audio function
 
+// Re-use the fade out audio functionality from networking.js
+function fadeOutAudio(audio) {
+  if (!audio || audio.paused) return;
+
+  const FADE_DURATION = 3000; // 3 seconds
+  const FADE_STEPS = 60;
+  const stepDuration = FADE_DURATION / FADE_STEPS;
+  const initialVolume = audio.volume;
+  const volumeStep = initialVolume > 0 ? initialVolume / FADE_STEPS : 0;
+
+  if (volumeStep === 0) {
+    audio.pause();
+    return;
+  }
+
+  let fadeInterval = setInterval(() => {
+    const newVolume = audio.volume - volumeStep;
+    if (newVolume <= 0) {
+      audio.volume = 0;
+      audio.pause();
+      audio.src = "";
+      clearInterval(fadeInterval);
+    } else {
+      audio.volume = newVolume;
+    }
+  }, stepDuration);
+}
+
 window.mobileAndTabletCheck = function () {
   let check = false;
   (function (a) {
@@ -184,6 +212,56 @@ export function startMenuMusic() {
 // Event handling system
 let eventsData = null;
 
+// Track active overrides with their expiration times and config
+let activeOverrides = {
+  music: null, // { endTime: number, config: object }
+  ambience: null, // { endTime: number, config: object }
+};
+
+// Function to check if there's an active override
+function hasActiveOverride(type) {
+  const override = activeOverrides[type];
+  if (!override) return false;
+
+  // Check if the override has expired
+  if (Date.now() >= override.endTime) {
+    activeOverrides[type] = null;
+    return false;
+  }
+  return true;
+}
+
+// Function to set an override, now stores a full config object
+function setOverride(type, config, duration) {
+  activeOverrides[type] = {
+    endTime: Date.now() + duration,
+    config: config,
+  };
+
+  // Schedule the removal of the override
+  setTimeout(() => {
+    if (activeOverrides[type]?.endTime <= Date.now()) {
+      activeOverrides[type] = null;
+      // Trigger a refresh of the normal music/ambience
+      if (type === "music" && typeof window.refreshWorldMusic === "function") {
+        window.refreshWorldMusic();
+      } else if (
+        type === "ambience" &&
+        typeof window.refreshWorldAmbience === "function"
+      ) {
+        window.refreshWorldAmbience();
+      }
+    }
+    console.log(`Override for ${type} has expired`);
+  }, duration);
+  console.log(`Set ${type} override to`, config, `for ${duration}ms`);
+}
+
+// Exported so networking.js can check for active overrides
+export function getActiveOverride(type) {
+  return hasActiveOverride(type) ? activeOverrides[type] : null;
+}
+
 // Cryptographically secure random number generator function
 function getSecureRandom(min, max) {
   // Create a new array with a single 32-bit unsigned integer
@@ -236,6 +314,92 @@ export function playEvent(eventName) {
     return;
   }
   console.log("Playing event:", event);
+
+  // Handle override cancellation if specified
+  if (event.cancelOverrideMusic) {
+    const currentOverride = activeOverrides["music"];
+    activeOverrides["music"] = null;
+
+    // Stop all currently playing music tracks
+    if (window.currentMusicLoopGroup) {
+      window.currentMusicLoopGroup.forEach((audio) => {
+        fadeOutAudio(audio);
+      });
+      window.currentMusicLoopGroup = [];
+      window.currentMusicPath = null;
+    }
+
+    // Refresh world music immediately
+    if (typeof window.refreshWorldMusic === "function") {
+      window.refreshWorldMusic();
+    }
+  }
+
+  if (event.cancelOverrideAmbience) {
+    const currentOverride = activeOverrides["ambience"];
+    activeOverrides["ambience"] = null;
+
+    // Stop all currently playing ambience tracks
+    if (window.currentAmbienceLoopGroup) {
+      window.currentAmbienceLoopGroup.forEach((audio) => {
+        fadeOutAudio(audio);
+      });
+      window.currentAmbienceLoopGroup = [];
+      window.currentAmbiencePath = null;
+    }
+
+    // Refresh world ambience immediately
+    if (typeof window.refreshWorldAmbience === "function") {
+      window.refreshWorldAmbience();
+    }
+  }
+
+  // Handle music override if specified
+  if (event.overrideMusic && event.overrideMusicDuration) {
+    // Create a config object with the full path for persistence
+    const overrideConfig = {
+      source: `assets/audio/events/${event.overrideMusic}`,
+      volume:
+        event.overrideMusicVolume !== undefined
+          ? event.overrideMusicVolume
+          : 1.0,
+      loop: false, // Don't loop override audio
+    };
+    // Set up override before audio changes
+    setOverride("music", overrideConfig, event.overrideMusicDuration);
+
+    // Use networking's handleEventAudio function to handle the transition
+    if (typeof window.handleEventAudio === "function") {
+      window.handleEventAudio(
+        "music",
+        overrideConfig,
+        false // Play immediately, don't fade in
+      );
+    }
+  }
+
+  // Handle ambience override if specified
+  if (event.overrideAmbience && event.overrideAmbienceDuration) {
+    const overrideConfig = {
+      source: `assets/audio/events/${event.overrideAmbience}`,
+      volume:
+        event.overrideAmbienceVolume !== undefined
+          ? event.overrideAmbienceVolume
+          : 1.0,
+      loop: false, // Don't loop override audio
+    };
+    // Set up override before audio changes
+    setOverride("ambience", overrideConfig, event.overrideAmbienceDuration);
+
+    // Use networking's handleAudio function to handle the transition
+    if (typeof window.handleEventAudio === "function") {
+      window.handleEventAudio(
+        "ambience",
+        overrideConfig,
+        false // Play immediately, don't fade in
+      );
+    }
+  }
 
   // Play sound if specified for desktop
   if (!isMobileUser && event.sound) {
@@ -334,8 +498,61 @@ export function playEvent(eventName) {
   }
 
   // You can add more event effects here (visual effects, etc.)
-  console.log("Playing event:", eventName);
 }
 
 // Initialize events when the script loads
 initEvents();
+
+// Function to refresh world music after override expires
+export function refreshWorldMusic() {
+  // Get the current world state from networking.js
+  const worldState = window.currentWorld;
+  if (!worldState || !worldState.music) return;
+
+  const {
+    musicSource = null,
+    volumeModifier = window.volumeModifier,
+    loopPoint = null,
+  } = worldState.music;
+
+  // Use handleAudio to play the world music
+  if (typeof window.handleAudio === "function" && musicSource) {
+    window.handleAudio(
+      "music",
+      {
+        source: musicSource,
+        volume: window.musicVolume / 2,
+        length: loopPoint,
+      },
+      volumeModifier / 2,
+      false // No fade in for world music refresh
+    );
+  }
+}
+
+// Function to refresh world ambience after override expires
+export function refreshWorldAmbience() {
+  // Get the current world state from networking.js
+  const worldState = window.currentWorld;
+  if (!worldState || !worldState.ambience) return;
+
+  const { ambienceSource = null, volumeModifier = window.volumeModifier } =
+    worldState.ambience;
+
+  // Use handleAudio to play the world ambience
+  if (typeof window.handleAudio === "function" && ambienceSource) {
+    window.handleAudio(
+      "ambience",
+      {
+        source: ambienceSource,
+        volume: window.ambienceVolume / 2,
+      },
+      volumeModifier / 2,
+      true // Fade in for world ambience refresh
+    );
+  }
+}
+
+// Export the override functions for external use
+window.refreshWorldMusic = refreshWorldMusic;
+window.refreshWorldAmbience = refreshWorldAmbience;
