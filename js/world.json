@@ -21,12 +21,12 @@
           "art": "inner_city/hospital.webp",
           "music": {
             "source": "inner_city/hospital.mp3",
-            "volume": 0.3,
+            "volume": 0.25,
             "length": 333000
           },
           "altmusic": {
             "source": "inner_city/hospital_alt.mp3",
-            "volume": 0.3,
+            "volume": 0.25,
             "length": 233000
           },
           "ambience": {
@@ -34,7 +34,7 @@
             "volume": 0.6,
             "length": 181000
           },
-          "actors": ["Hospital Nurse", "Surgeon", "Cédric James"]
+          "actors": ["Hospital Nurse", "Surgeon", "Cédric James", "Toaster"]
         },
         {
           "name": "Central Plaza",
@@ -42,7 +42,7 @@
           "art": "inner_city/central_plaza.webp",
           "music": {
             "source": "inner_city/central_plaza.mp3",
-            "volume": 0.4,
+            "volume": 0.35,
             "length": 150600
           },
           "ambience": {
@@ -50,7 +50,14 @@
             "volume": 0.5,
             "length": 498500
           },
-          "actors": ["Cédric James", "Police Squad"]
+          "actors": [
+            "Random Guy",
+            "Random Lady",
+            "Random Lil' Punk",
+            "Random Lil' Girl",
+            "Cédric James",
+            "Police Squad"
+          ]
         },
         {
           "name": "MacDougall's",
@@ -58,7 +65,7 @@
           "art": "inner_city/macdougalls.webp",
           "music": {
             "source": "inner_city/macdougalls.mp3",
-            "volume": 0.5,
+            "volume": 0.45,
             "length": 235000
           },
           "ambience": {
@@ -95,8 +102,24 @@
           },
           "ambience": {
             "source": "electric_hum.mp3",
-            "volume": 0.05,
+            "volume": 0.035,
             "length": 9500
+          },
+          "actors": ["Cédric James"]
+        },
+        {
+          "name": "Biodome",
+          "description": "A large, enclosed ecosystem that houses a variety of plant and microbiological life, providing a green escape from the sky-high industrial environment.",
+          "art": "inner_city/biodome.webp",
+          "music": {
+            "source": "inner_city/biodome.mp3",
+            "volume": 0.4,
+            "length": 145000
+          },
+          "ambience": {
+            "source": "jungle.mp3",
+            "volume": 0.025,
+            "length": 104800
           },
           "actors": ["Cédric James"]
         },
@@ -145,7 +168,7 @@
           "music": {
             "source": "corporate_district/senators_office.mp3",
             "volume": 0.4,
-            "length": 65000
+            "length": 64000
           },
           "actors": [
             "Jack Nickle",
@@ -155,13 +178,13 @@
           ]
         },
         {
-          "name": "Tech Haven",
-          "description": "A high-end electronics store offering the latest in cyberware and gadgets.",
-          "art": "corporate_district/tech_haven.webp",
+          "name": "Panoptic Intelligence",
+          "description": "In case it wasn't obvious, this company specializes in surveillance and data gathering, often in less-than-legal ways.",
+          "art": "corporate_district/panoptic_intelligence.webp",
           "music": {
-            "source": "corporate_district/tech_haven.mp3",
+            "source": "corporate_district/panoptic_intelligence.mp3",
             "volume": 0.5,
-            "length": 110000
+            "length": 82500
           },
           "ambience": {
             "source": "store_ambience.mp3",
@@ -169,6 +192,140 @@
             "length": 80000
           },
           "actors": ["Cédric James"]
+        }
+      ]
+    },
+    {
+      "name": "Downtown Slums",
+      "description": "The lesser known and less-desireable part of the city, where poverty and crime go largely unchecked.",
+      "art": "downtown_slums/downtown_slums.webp",
+      "music": {
+        "source": "downtown_slums/downtown_slums.mp3",
+        "volume": 0.3,
+        "length": 167000
+      },
+      "ambience": {
+        "source": "street_noises.mp3",
+        "volume": 0.1,
+        "length": 81000
+      },
+      "locations": [
+        {
+          "name": "2nd Amendment Arms",
+          "description": "A proudly independent gun shop that sells a variety of firearms and ammunition, often to those who can't get them elsewhere.",
+          "art": "downtown_slums/2a_arms.webp",
+          "music": {
+            "source": "downtown_slums/2a_arms.mp3",
+            "volume": 0.25,
+            "length": 203000
+          },
+          "ambience": {
+            "source": "electric_hum.mp3",
+            "volume": 0.015,
+            "length": 9500
+          },
+          "actors": ["Cédric James", "Cain Harrow"]
+        },
+        {
+          "name": "Chuck's Cafeteria",
+          "description": "A suspiciously cheap eatery that serves questionable food to those who can't afford anything better.",
+          "art": "downtown_slums/chucks_cafeteria.webp",
+          "music": {
+            "source": "downtown_slums/chucks_cafeteria.mp3",
+            "volume": 0.3,
+            "length": 72000
+          },
+          "ambience": {
+            "source": "distant_voices.mp3",
+            "volume": 0.3,
+            "length": 498500
+          },
+          "actors": ["Waitress", "Cédric James", "Cain Harrow"]
+        },
+        {
+          "name": "MacDougall's",
+          "description": "The popular choice amongst locals for a quick bite, though the food is questionable.",
+          "art": "downtown_slums/macdougalls.webp",
+          "music": {
+            "source": "downtown_slums/macdougalls.mp3",
+            "volume": 0.45,
+            "length": 235000
+          },
+          "ambience": {
+            "source": "restaurant_beeping.mp3",
+            "volume": 0.1,
+            "length": 14300
+          },
+          "actors": ["Cashier", "Cédric James"]
+        },
+        {
+          "name": "Pablo's Tacos Y Tequila",
+          "description": "A vibrant pub known for its spicy food and lively atmosphere, often filled with laughter and Mexican music.",
+          "art": "downtown_slums/pablos_tacos.webp",
+          "music": {
+            "source": "downtown_slums/pablos_tacos.mp3",
+            "volume": 0.5,
+            "length": 196000
+          },
+          "ambience": {
+            "source": "crowded_restaurant.mp3",
+            "volume": 0.5,
+            "length": 198000
+          },
+          "actors": ["Cédric James"]
+        },
+        {
+          "name": "Central Library",
+          "description": "A quiet place filled with books and digital archives, perfect for research or a moment of peace.",
+          "art": "downtown_slums/library.webp",
+          "music": {
+            "source": "downtown_slums/library.mp3",
+            "volume": 0.3,
+            "length": 41800
+          },
+          "ambience": {
+            "source": "electric_hum.mp3",
+            "volume": 0.05,
+            "length": 9500
+          },
+          "actors": ["Cédric James"]
+        },
+        {
+          "name": "Biodome",
+          "description": "A large, enclosed ecosystem that houses a variety of plant and microbiological life, providing a green escape from the sky-high industrial environment.",
+          "art": "downtown_slums/biodome.webp",
+          "music": {
+            "source": "downtown_slums/biodome.mp3",
+            "volume": 0.4,
+            "length": 145000
+          },
+          "ambience": {
+            "source": "jungle.mp3",
+            "volume": 0.025,
+            "length": 104800
+          },
+          "actors": ["Cédric James"]
+        },
+        {
+          "name": "Central Police Station",
+          "description": "The main hub for law enforcement in the city, a place where justice is served.",
+          "art": "downtown_slums/police_station.webp",
+          "music": {
+            "source": "downtown_slums/police_station.mp3",
+            "volume": 0.4,
+            "length": 263000
+          },
+          "ambience": {
+            "source": "police_comms.mp3",
+            "volume": 0.025,
+            "length": 229800
+          },
+          "actors": [
+            "Saburo Amon",
+            "Cain Harrow",
+            "Police Squad",
+            "Cédric James"
+          ]
         }
       ]
     },
@@ -201,7 +358,12 @@
             "volume": 0.3,
             "length": 60000
           },
-          "actors": ["Cédric James", "Cain Harrow", "Police Squad"]
+          "actors": [
+            "Cédric James",
+            "Cain Harrow",
+            "Saburo Amon",
+            "Police Squad"
+          ]
         },
         {
           "name": "Oasis Springs Tavern",
@@ -215,9 +377,15 @@
           "ambience": {
             "source": "tavern.mp3",
             "volume": 0.5,
-            "length": 259000
+            "length": 179000
           },
-          "actors": ["Cédric James"]
+          "actors": [
+            "Bartender",
+            "Cédric James",
+            "Cain Harrow",
+            "Saburo Amon",
+            "Police Squad"
+          ]
         },
         {
           "name": "Junkyard",
@@ -233,7 +401,12 @@
             "volume": 0.2,
             "length": 120000
           },
-          "actors": ["Cédric James", "Cain Harrow", "Police Squad"]
+          "actors": [
+            "Cédric James",
+            "Cain Harrow",
+            "Saburo Amon",
+            "Police Squad"
+          ]
         }
       ]
     }

@@ -53,6 +53,15 @@
       "vibrationDelay": 0.0
     },
     {
+      "name": "Sidekick Gunshot",
+      "art": "sidekick.jpg",
+      "sound": "sidekick.mp3",
+      "soundVolume": 3.0,
+      "soundDelay": 0.0,
+      "vibrationPattern": [100],
+      "vibrationDelay": 0.0
+    },
+    {
       "name": "Light Explosion",
       "art": "light_explosion.jpg",
       "sound": "light_explosion.mp3",

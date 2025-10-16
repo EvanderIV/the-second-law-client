@@ -197,7 +197,7 @@
           "music": {
             "source": "actors/antag_theme0.mp3",
             "volume": 0.5,
-            "length": 90000
+            "length": 72000
           }
         },
         {
@@ -206,7 +206,7 @@
           "music": {
             "source": "actors/antag_theme0.mp3",
             "volume": 0.5,
-            "length": 90000
+            "length": 72000
           }
         },
         {
@@ -224,12 +224,30 @@
           "music": {
             "source": "actors/antag_theme1.mp3",
             "volume": 0.5,
-            "length": 90000
+            "length": 121500
+          }
+        },
+        {
+          "trigger": "interact 2",
+          "art": "antag/antag.png",
+          "music": {
+            "source": "actors/antag_theme2.mp3",
+            "volume": 0.5,
+            "length": 143000
+          }
+        },
+        {
+          "trigger": "angry 2",
+          "art": "antag/antag_angry.png",
+          "music": {
+            "source": "actors/antag_theme2.mp3",
+            "volume": 0.5,
+            "length": 143000
           }
         },
         {
           "trigger": "battle 0",
-          "art": "antag/cain_battle0.png",
+          "art": "antag/antag.png",
           "music": {
             "source": "actors/antag_battle0.mp3",
             "volume": 0.6,
@@ -238,7 +256,7 @@
         },
         {
           "trigger": "battle 1",
-          "art": "antag/antag_battle1.png",
+          "art": "antag/antag_cocky.png",
           "music": {
             "source": "actors/antag_battle1.mp3",
             "volume": 0.7,
@@ -247,7 +265,7 @@
         },
         {
           "trigger": "battle 2",
-          "art": "antag/antag_battle2.png",
+          "art": "antag/antag_angry.png",
           "music": {
             "source": "actors/antag_battle2.mp3",
             "volume": 0.7,
@@ -256,7 +274,7 @@
         },
         {
           "trigger": "battle 3",
-          "art": "antag/antag_battle3.png",
+          "art": "antag/antag.png",
           "music": {
             "source": "actors/antag_battle3.mp3",
             "volume": 0.7,
@@ -326,7 +344,126 @@
         },
         {
           "trigger": "battle",
-          "art": "surgeon/surgeon_battle.png",
+          "art": "surgeon/surgeon.png",
+          "music": {
+            "source": "actors/generic_battle.mp3",
+            "volume": 0.4,
+            "length": 205700
+          }
+        }
+      ],
+      "Toaster": [
+        {
+          "trigger": "interact",
+          "art": "toaster/toaster.png",
+          "music": {
+            "source": "actors/toaster.mp3",
+            "volume": 0.5,
+            "length": 84000
+          }
+        },
+        {
+          "trigger": "cute",
+          "art": "toaster/toaster_cute.png",
+          "music": {
+            "source": "actors/toaster_cute.mp3",
+            "volume": 0.3,
+            "length": 118000
+          }
+        },
+        {
+          "trigger": "battle",
+          "art": "toaster/toaster_evil.png",
+          "music": {
+            "source": "actors/toaster_evil.mp3",
+            "volume": 0.4,
+            "length": 194000
+          }
+        }
+      ],
+      "Random Lil' Punk": [
+        {
+          "trigger": "interact",
+          "art": "randomlilpunk/randomlilpunk.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "randomlilpunk/randomlilpunk.png",
+          "music": {
+            "source": "actors/generic_battle.mp3",
+            "volume": 0.4,
+            "length": 205700
+          }
+        }
+      ],
+      "Random Lil' Girl": [
+        {
+          "trigger": "interact",
+          "art": "randomlilgirl/randomlilgirl.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "randomlilgirl/randomlilgirl.png",
+          "music": {
+            "source": "actors/generic_battle.mp3",
+            "volume": 0.4,
+            "length": 205700
+          }
+        }
+      ],
+      "Random Guy": [
+        {
+          "trigger": "interact",
+          "art": "randomguy/randomguy.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "randomguy/randomguy.png",
+          "music": {
+            "source": "actors/generic_battle.mp3",
+            "volume": 0.4,
+            "length": 205700
+          }
+        }
+      ],
+      "Random Lady": [
+        {
+          "trigger": "interact",
+          "art": "randomlady/randomlady.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "randomlady/randomlady.png",
+          "music": {
+            "source": "actors/generic_battle.mp3",
+            "volume": 0.4,
+            "length": 205700
+          }
+        }
+      ],
+      "Waitress": [
+        {
+          "trigger": "interact",
+          "art": "waitress/waitress.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "waitress/waitress.png",
+          "music": {
+            "source": "actors/generic_battle.mp3",
+            "volume": 0.4,
+            "length": 205700
+          }
+        }
+      ],
+      "Bartender": [
+        {
+          "trigger": "interact",
+          "art": "bartender/bartender.png"
+        },
+        {
+          "trigger": "battle",
+          "art": "bartender/bartender.png",
           "music": {
             "source": "actors/generic_battle.mp3",
             "volume": 0.4,

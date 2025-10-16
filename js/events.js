@@ -509,20 +509,20 @@ export function refreshWorldMusic() {
   const worldState = window.currentWorld;
   if (!worldState || !worldState.music) return;
 
-  const {
-    musicSource = null,
-    volumeModifier = window.volumeModifier,
-    loopPoint = null,
-  } = worldState.music;
+  // *** FIX: Use 'source' and 'length' to match the properties in the worldState.music object ***
+  let source = window.currentWorld.music.source;
+  let volumeModifier = window.currentWorld.music.volume;
+  let length = window.currentWorld.music.length;
 
   // Use handleAudio to play the world music
-  if (typeof window.handleAudio === "function" && musicSource) {
+  // *** FIX: Check for 'source' instead of the non-existent 'musicSource' ***
+  if (typeof window.handleAudio === "function" && source) {
     window.handleAudio(
       "music",
       {
-        source: musicSource,
+        source: source,
         volume: window.musicVolume / 2,
-        length: loopPoint,
+        length: length,
       },
       volumeModifier / 2,
       false // No fade in for world music refresh
@@ -536,15 +536,17 @@ export function refreshWorldAmbience() {
   const worldState = window.currentWorld;
   if (!worldState || !worldState.ambience) return;
 
-  const { ambienceSource = null, volumeModifier = window.volumeModifier } =
-    worldState.ambience;
+  // *** FIX: Use 'source' to match the property in the worldState.ambience object ***
+  let source = window.currentWorld.ambience.source;
+  let volumeModifier = window.currentWorld.ambience.volume;
 
   // Use handleAudio to play the world ambience
-  if (typeof window.handleAudio === "function" && ambienceSource) {
+  // *** FIX: Check for 'source' instead of the non-existent 'ambienceSource' ***
+  if (typeof window.handleAudio === "function" && source) {
     window.handleAudio(
       "ambience",
       {
-        source: ambienceSource,
+        source: source,
         volume: window.ambienceVolume / 2,
       },
       volumeModifier / 2,
