@@ -351,7 +351,12 @@ if (document.cookie.includes("skin")) {
 }
 
 let darkMode = true;
-if (cookies.darkMode === "1") {
+if (cookies.darkMode === "0") {
+  const sqrElement = document.getElementById("sqr");
+  if (sqrElement) {
+    sqrElement.classList.add("ship-display-" + theme);
+  }
+} else {
   darkMode = true; // Set global darkMode state
   let darkableElems = document.getElementsByClassName("darkable");
   for (let i = 0; i < darkableElems.length; i++) {
@@ -364,11 +369,6 @@ if (cookies.darkMode === "1") {
   if (sqrElement) {
     sqrElement.classList.remove("ship-display-" + theme); // Remove non-dark theme class
     sqrElement.classList.add("ship-display-" + theme + "-darkmode");
-  }
-} else {
-  const sqrElement = document.getElementById("sqr");
-  if (sqrElement) {
-    sqrElement.classList.add("ship-display-" + theme);
   }
 }
 
