@@ -52,7 +52,7 @@ function reconnectToSession() {
 }
 
 function setupReconnectionLogic() {
-  reconnectAttempts = 0;
+  let reconnectAttempts = 0;
 
   reconnectInterval = setInterval(() => {
     if (socket && socket.connected) {
