@@ -1264,3 +1264,343 @@ function resetGameState() {
 
 // Make sure to export all necessary functions and variables
 export { musicVolume, ambienceVolume, sfxVolume, playJoinSounds, playOneShot };
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.mobileAndTabletCheck()) {
+    const settingsBtn = document.getElementById("settings-button");
+    if (settingsBtn) {
+      settingsBtn.remove();
+    }
+  }
+
+  // Ensure no mobile-specific logic breaks
+  const settingsDiv = document.getElementById("settings-div");
+  if (settingsDiv) {
+    settingsDiv.style.display = "none";
+  }
+
+  const joinButton = document.getElementById("join-button");
+  const nicknameInput = document.getElementById("nickname");
+  const rootDiv = document.getElementById("root"); // Ensure dice div is appended to the correct container
+
+  let diceDiv = document.getElementById("dice-container");
+  if (!diceDiv) {
+    diceDiv = document.createElement("div");
+    diceDiv.id = "dice-container";
+    diceDiv.innerHTML = `
+      <div id="dice-box" style="font-size: 2rem; text-align: center; display: flex; flex-direction: column; align-items: center;"> <!-- Further increased font size -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;"> <!-- Label and dropdown side by side -->
+          <label for="mode-select" style="font-size: 2rem;">Mode:</label>
+          <select id="mode-select" style="font-size: 2rem; width: 200px;"> <!-- Increased width of dropdown -->
+            <option value="standard">Standard</option>
+            <option value="matrix">Matrix</option>
+          </select>
+        </div>
+        <div id="standard-mode" style="margin-top: 1rem;"> <!-- Added margin for spacing -->
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;"> <!-- Vertical alignment for labels and inputs -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;"> <!-- Label and input side by side -->
+              <label for="num-dice" style="font-size: 2rem;">Number of Dice:</label>
+              <input type="number" id="num-dice" value="1" min="1" style="font-size: 2rem;"> <!-- Further scaled up font size for input -->
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;"> <!-- Label and input side by side -->
+              <label for="dice-faces" style="font-size: 2rem;">Faces per Die:</label>
+              <input type="number" id="dice-faces" value="20" min="2" style="font-size: 2rem;"> <!-- Further scaled up font size for input -->
+            </div>
+          </div>
+          <button id="roll-button" style="font-size: 2rem; margin-top: 1rem;">Roll Dice</button> <!-- Further scaled up font size for button -->
+          <div id="roll-results" style="margin-top: 1rem; text-align: left; display: none;"> <!-- Results container -->
+            <h3>Roll Results:</h3>
+            <ul id="roll-values" style="font-size: 1.5rem;"></ul>
+            <div id="important-stats" style="font-size: 1.5rem; margin-top: 1rem;"></div>
+            <div id="additional-stats" style="font-size: 1rem; margin-top: 0.5rem; color: gray;"></div>
+          </div>
+        </div>
+        <div id="matrix-mode" style="display: none;">
+          <table id="matrix-table" style="margin: 0 auto;"> <!-- Centered matrix table -->
+            ${Array.from(
+              { length: 5 },
+              (_, row) => `
+              <tr>
+                ${Array.from(
+                  { length: 5 },
+                  (_, col) =>
+                    `<td data-row="${row}" data-col="${col}" style="font-size: 2rem;"></td>`
+                ).join("")}
+              </tr>
+            `
+            ).join("")}
+          </table>
+        </div>
+      </div>
+    `;
+    diceDiv.style.display = "none"; // Hide dice div initially
+    if (window.mobileAndTabletCheck()) {
+      if (rootDiv) {
+        rootDiv.appendChild(diceDiv);
+      } else {
+        document.body.appendChild(diceDiv);
+      }
+    }
+  }
+
+  const modeSelect = document.getElementById("mode-select");
+  const standardModeDiv = document.getElementById("standard-mode");
+  const matrixModeDiv = document.getElementById("matrix-mode");
+  const rollResultsDiv = document.getElementById("roll-results"); // Ensure rollResultsDiv is declared
+  const importantStatsDiv = document.getElementById("important-stats"); // Ensure importantStatsDiv is declared
+  const additionalStatsDiv = document.getElementById("additional-stats"); // Ensure additionalStatsDiv is declared
+
+  if (modeSelect) {
+    modeSelect.addEventListener("change", () => {
+      if (modeSelect.value === "matrix") {
+        // Hide standard mode and dice results
+        if (standardModeDiv) standardModeDiv.style.display = "none";
+        if (rollResultsDiv) rollResultsDiv.style.display = "none";
+
+        // Show and configure matrix mode
+        if (matrixModeDiv) {
+          matrixModeDiv.style.display = "flex";
+          matrixModeDiv.style.flexDirection = "column";
+          matrixModeDiv.style.marginTop = "20px";
+          matrixModeDiv.style.justifyContent = "center";
+          matrixModeDiv.style.alignItems = "center";
+
+          // Populate the grid with random numbers between 1 and 20
+          const matrixTable = document.getElementById("matrix-table");
+          if (matrixTable) {
+            matrixTable.style.width = "95%"; // Set table width to 95% of the containing div
+            matrixTable.style.height = "95%"; // Set table height to match the width
+            matrixTable.style.aspectRatio = "1 / 1"; // Ensure the grid maintains a square aspect ratio
+            matrixTable.innerHTML = Array.from(
+              { length: 5 },
+              (_, row) => `
+              <tr>
+                ${Array.from({ length: 5 }, () => {
+                  const baseStyle =
+                    "font-size: 2rem; text-align: center; padding: 10px; border: 1px solid #444; background: linear-gradient(to bottom, #282828, #222222); color: #ddd; width: 20%; height: 20%; box-sizing: border-box; filter: brightness(1);"; // Default brightness
+                  const highlightStyle = "filter: brightness(1.5);"; // Increase brightness for highlighting
+                  const nat20Style =
+                    "background: linear-gradient(to bottom, #282828, #442); color: #ffeb99;"; // Brightened text for 20 in dark mode
+                  const nat1Style =
+                    "background: linear-gradient(to bottom, #323, #222222); color: #e6cce6;"; // Even more subtle purple tint for 1 in dark mode
+
+                  const randomValue = Math.floor(Math.random() * 20) + 1;
+                  const cellStyle =
+                    randomValue === 20
+                      ? `${baseStyle} ${nat20Style}`
+                      : randomValue === 1
+                      ? `${baseStyle} ${nat1Style}`
+                      : baseStyle;
+
+                  return `<td style="${cellStyle}">${randomValue}</td>`;
+                }).join("")}
+              </tr>
+            `
+            ).join("");
+          }
+
+          // Initialize the grid rules
+          let currentRow = 0;
+          let currentCol = null;
+          let isSelectingRow = true; // Start by selecting from a row
+          let lastSelectedCell = null; // Track the last selected cell
+
+          const cells = Array.from(matrixTable.getElementsByTagName("td"));
+          cells.forEach((cell, index) => {
+            const row = Math.floor(index / 5);
+            const col = index % 5;
+
+            // Highlight the top row initially
+            if (row === 0) {
+              cell.style.filter = "brightness(1.75)"; // Highlight effect
+              cell.style.pointerEvents = "auto";
+            } else {
+              cell.style.filter = "brightness(0.75)"; // Default brightness
+              cell.style.pointerEvents = "none"; // Disable other rows
+            }
+
+            cell.addEventListener("click", () => {
+              if (
+                (isSelectingRow && currentRow === row) ||
+                (!isSelectingRow && currentCol === col) ||
+                currentRow === 0
+              ) {
+                // Update the current row and column
+                currentRow = row;
+                currentCol = col;
+                isSelectingRow = !isSelectingRow; // Toggle between row and column selection
+
+                // If there was a previously selected cell, set its new value
+                if (lastSelectedCell && lastSelectedCell !== cell) {
+                  lastSelectedCell.textContent =
+                    Math.floor(Math.random() * 20) + 1; // Set new value
+
+                  // Update the cell's style based on its new value
+                  const updateCellStyle = (cell) => {
+                    const value = parseInt(cell.textContent, 10);
+                    const baseStyle =
+                      "font-size: 2rem; text-align: center; padding: 10px; border: 1px solid #444; background: linear-gradient(to bottom, #282828, #222222); color: #ddd; width: 20%; height: 20%; box-sizing: border-box; filter: brightness(1);"; // Default brightness
+                    const nat20Style =
+                      "background: linear-gradient(to bottom, #282828, #442); color: #ffeb99;"; // Brightened text for 20 in dark mode
+                    const nat1Style =
+                      "background: linear-gradient(to bottom, #323, #222222); color: #e6cce6;"; // Even more subtle purple tint for 1 in dark mode
+
+                    if (value === 20) {
+                      cell.style = `${baseStyle} ${nat20Style}`;
+                    } else if (value === 1) {
+                      cell.style = `${baseStyle} ${nat1Style}`;
+                    } else {
+                      cell.style = baseStyle;
+                    }
+                  };
+
+                  // Call updateCellStyle whenever a new value is assigned
+                  if (lastSelectedCell && lastSelectedCell !== cell) {
+                    lastSelectedCell.textContent =
+                      Math.floor(Math.random() * 20) + 1; // Set new value
+                    updateCellStyle(lastSelectedCell); // Update the style based on the new value
+                    lastSelectedCell.style.pointerEvents = "auto"; // Re-enable
+                  }
+                }
+
+                // Update the last selected cell
+                lastSelectedCell = cell;
+
+                // Un-highlight all cells first
+                cells.forEach((c) => {
+                  if (c !== cell) {
+                    // Skip the currently selected cell
+                    c.style.filter = "brightness(0.75)"; // Reset brightness
+                    c.style.pointerEvents = "none"; // Disable all cells initially
+                  }
+                });
+
+                // Highlight only the new row or column based on the toggle
+                cells.forEach((c, i) => {
+                  const r = Math.floor(i / 5);
+                  const cl = i % 5;
+                  if (
+                    (isSelectingRow && r === currentRow) ||
+                    (!isSelectingRow && cl === currentCol)
+                  ) {
+                    c.style.filter = "brightness(1.75)"; // Highlight effect
+                    c.style.pointerEvents = "auto";
+                  }
+                });
+
+                // Darken the selected cell
+                cell.style.filter = "brightness(0.9)"; // Disabled effect
+                cell.style.pointerEvents = "none"; // Ensure it cannot be clicked again
+              }
+            });
+          });
+        }
+      } else {
+        // Show standard mode and dice results
+        if (standardModeDiv) standardModeDiv.style.display = "block";
+        if (rollResultsDiv) rollResultsDiv.style.display = "block";
+
+        // Hide matrix mode
+        if (matrixModeDiv) matrixModeDiv.style.display = "none";
+      }
+    });
+  }
+
+  if (joinButton) {
+    joinButton.addEventListener("click", () => {
+      const roomCode = document.getElementById("game-code").value;
+      if (roomCode.length === 4) {
+        if (nicknameInput) {
+          nicknameInput.style.display = "none"; // Hide nickname div after joining
+        }
+        diceDiv.style.display = "block"; // Show dice div after joining
+      }
+    });
+  }
+
+  if (window.mobileAndTabletCheck() && diceDiv) {
+    diceDiv.style.height = "50vh"; // Adjust height to utilize more vertical space
+    diceDiv.style.overflowY = "auto"; // Ensure scrollability if content overflows
+  } else if (!isMobileUser && diceDiv) {
+    diceDiv.style.display = "none"; // Ensure dice-container is hidden on desktop clients
+  }
+
+  const rollButton = document.getElementById("roll-button"); // Ensure rollButton is declared
+
+  if (rollButton) {
+    rollButton.addEventListener("click", () => {
+      const numDice = parseInt(document.getElementById("num-dice").value, 10);
+      const diceFaces = parseInt(
+        document.getElementById("dice-faces").value,
+        10
+      );
+
+      const getBackgroundStyle = (roll) => {
+        if (roll === 20)
+          return "background: linear-gradient(to bottom, #d4af37, #b8860b); color: white; font-weight: bold; border-radius: 5px; padding: 0 5px; display: inline-block; text-align: center;"; // Gold
+        if (roll === 19)
+          return "background: linear-gradient(to bottom, silver, gray); color: black; border-radius: 5px; padding: 0 5px; display: inline-block; text-align: center;"; // Silver
+        if (roll === 18)
+          return "background: linear-gradient(to bottom, #8c6239, #5a3d1e); color: white; border-radius: 5px; padding: 0 5px; display: inline-block; text-align: center;"; // Bronze
+        if (roll === 1)
+          return "background: linear-gradient(to bottom, #4b0082, #2e0854); color: white; border-radius: 5px; padding: 0 5px; display: inline-block; text-align: center;"; // Purple
+        return "display: inline-block; text-align: center;"; // Default
+      };
+
+      if (numDice === 1) {
+        const roll = Math.floor(Math.random() * diceFaces) + 1;
+        rollValuesList.innerHTML = `<span style="font-size: 4rem; ${getBackgroundStyle(
+          roll
+        )}">${roll}</span>`; // Dynamically fit big number
+        importantStatsDiv.innerHTML = "";
+        additionalStatsDiv.innerHTML = "";
+        rollResultsDiv.style.display = "block";
+      } else if (numDice >= 2) {
+        const rolls = Array.from(
+          { length: numDice },
+          () => Math.floor(Math.random() * diceFaces) + 1
+        );
+        const highest = Math.max(...rolls);
+        const lowest = Math.min(...rolls);
+        const average = (
+          rolls.reduce((sum, val) => sum + val, 0) / rolls.length
+        ).toFixed(2);
+        const variance =
+          rolls.reduce((sum, val) => sum + Math.pow(val - average, 2), 0) /
+          rolls.length;
+        const stdDeviation = Math.sqrt(variance).toFixed(2);
+        const total = rolls.reduce((sum, val) => sum + val, 0); // Calculate total of all dice
+
+        rollValuesList.innerHTML = rolls
+          .map(
+            (roll) =>
+              `<span style="display: inline-block; width: 50px; font-size: 2rem; ${getBackgroundStyle(
+                roll
+              )}">${roll}</span>`
+          ) // Fixed width for multiple numbers
+          .join("");
+        importantStatsDiv.innerHTML = `
+          <p style="font-size: 2rem;">Highest: ${highest}</p>
+          <p style="font-size: 2rem;">Lowest: ${lowest}</p>
+          <p style="font-size: 2rem;">Total: ${total}</p>
+        `;
+        additionalStatsDiv.innerHTML = `
+          <p style="font-size: 1.5rem; color: gray;">Average: ${average}</p>
+          <p style="font-size: 1.5rem; color: gray;">Standard Deviation: ${stdDeviation}</p>
+        `;
+
+        rollResultsDiv.style.display = "block";
+      } else {
+        rollResultsDiv.style.display = "none";
+      }
+    });
+  }
+
+  const rollValuesList = document.getElementById("roll-values");
+
+  const areaLabel = document.getElementById("area-label");
+  if (areaLabel && isMobileUser) {
+    areaLabel.style.paddingBottom = "5.8rem"; // Add padding to area-label
+    areaLabel.style.bottom = "0";
+  }
+});

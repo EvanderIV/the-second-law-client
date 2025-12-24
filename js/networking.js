@@ -312,8 +312,12 @@ function setupSocketEventHandlers() {
         stopMenuMusic(true); // This smoothly fades out the menu music
         let settingsDiv = document.getElementById("settings-div");
         let settingsBtn = document.getElementById("settings-button");
-        settingsDiv.style.display = "none";
-        settingsBtn.style.display = "none";
+        if (settingsDiv) {
+          settingsDiv.style.display = "none";
+        }
+        if (settingsBtn) {
+          settingsBtn.style.display = "none";
+        }
       }
 
       // Fetch world and actions configuration
@@ -362,12 +366,21 @@ function setupSocketEventHandlers() {
         }, 1800);
       }
 
+      let mobileStyling = isMobileUser ? ' style="bottom: 10.4rem;"' : "";
+
       // --- AREA LABEL MANAGEMENT ---
       const areaLabel = document.getElementById("area-label");
       if (areaLabel && data.location) {
-        if (areaLabel.innerHTML !== "<div></div>" + data.location) {
+        if (
+          areaLabel.innerHTML !==
+          '<div id="area-overscore"' + mobileStyling + "></div>" + data.location
+        ) {
           setTimeout(() => {
-            areaLabel.innerHTML = "<div></div>" + data.location;
+            areaLabel.innerHTML =
+              '<div id="area-overscore"' +
+              mobileStyling +
+              "></div>" +
+              data.location;
             areaLabel.classList.add("visible");
           }, 1000);
           if (areaLabelTimer) {
@@ -379,9 +392,16 @@ function setupSocketEventHandlers() {
         }
       } else if (areaLabel && !data.location && data.sector) {
         // If no location but sector is present, show sector name
-        if (areaLabel.innerHTML !== "<div></div>" + data.sector) {
+        if (
+          areaLabel.innerHTML !==
+          '<div id="area-overscore"' + mobileStyling + "></div>" + data.sector
+        ) {
           setTimeout(() => {
-            areaLabel.innerHTML = "<div></div>" + data.sector;
+            areaLabel.innerHTML =
+              '<div id="area-overscore"' +
+              mobileStyling +
+              "></div>" +
+              data.sector;
             areaLabel.classList.add("visible");
           }, 1000);
           if (areaLabelTimer) {
