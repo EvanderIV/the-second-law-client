@@ -1,5 +1,8 @@
 const gameCodeLength = 4;
 
+// Declare sessionCode globally
+let sessionCode = null;
+
 // Check URL parameters for room code
 function getUrlParameter(name) {
   const urlParams = new URLSearchParams(window.location.search);
@@ -728,6 +731,15 @@ if (gameCodeInput && joinButton) {
     }
   });
 }
+
+// Store the session code when joining a session
+document.getElementById("join-button").addEventListener("click", () => {
+  const gameCodeInput = document.getElementById("game-code");
+  if (gameCodeInput) {
+    sessionCode = gameCodeInput.value;
+    console.log("Session code stored:", sessionCode);
+  }
+});
 
 if (!document.getElementById("error-message")) {
   const errorDiv = document.createElement("div");

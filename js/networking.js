@@ -31,6 +31,51 @@ let onPlayerInfoUpdate;
 let onGameStarting;
 let onRoomClosed;
 
+// Function to reconnect to the session
+function reconnectToSession() {
+  if (!sessionCode) {
+    console.warn("No session code available for reconnection.");
+    return;
+  }
+
+  console.log("Attempting to reconnect to session:", sessionCode);
+
+  // Emit a reconnect event to the server
+  socket.emit("reconnectSession", { code: sessionCode }, (response) => {
+    if (response.success) {
+      console.log("Reconnected to session successfully.");
+    } else {
+      console.warn("Failed to reconnect to session. Refreshing page.");
+      window.location.reload();
+    }
+  });
+}
+
+function setupReconnectionLogic() {
+  reconnectAttempts = 0;
+
+  reconnectInterval = setInterval(() => {
+    if (socket && socket.connected) {
+      clearInterval(reconnectInterval);
+      reconnectAttempts = 0;
+      return;
+    }
+    reconnectAttempts++;
+
+    if (reconnectAttempts <= 5) {
+      reconnectToSession(); // Attempt every second for the first 5 attempts
+    } else {
+      console.log("Switching to slower reconnection attempts.");
+      clearInterval(reconnectInterval);
+      reconnectInterval = setInterval(() => {
+        if (!socket || !socket.connected) {
+          reconnectToSession(); // Attempt every 5 seconds after 5 attempts
+        }
+      }, 5000);
+    }
+  }, 1000);
+}
+
 // Expose audio handler for events
 window.handleEventAudio = (type, config, useFadeIn = true) => {
   if (isMobileUser) return;
@@ -725,3 +770,15 @@ window.networkManager = {
     setupSocketEventHandlers();
   },
 };
+
+function monitorConnection() {
+  setInterval(() => {
+    if (!socket || !socket.connected) {
+      console.warn("WebSocket disconnected. Attempting to reconnect...");
+      setupReconnectionLogic();
+    }
+  }, 5000); // Check every 5 seconds
+}
+
+// Call monitorConnection to start monitoring the WebSocket connection
+monitorConnection();
